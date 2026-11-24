@@ -78,6 +78,16 @@ MAX_DAILY_EXP_LIMIT = 1_000_000_000
 GLOBAL_SLOTS = 999999
 GLOBAL_EXPIRES = 4102444800
 
+# ── One-Shot / Online-Slot Pool Config ──
+# ONLINE_SLOT_LIMIT = 0  → unlimited (default behaviour)
+# ONLINE_SLOT_LIMIT = N  → at most N accounts running at once;
+#                          when one finishes / hits lvl-limit it is replaced
+#                          automatically from the waiting queue.
+ONLINE_SLOT_LIMIT = int(os.environ.get("ONLINE_SLOT_LIMIT", "0"))
+ONLINE_SLOT_LVL_LIMIT = int(os.environ.get("ONLINE_SLOT_LVL_LIMIT", "0"))   # 0 = no auto lvl-limit
+_POOL_QUEUE: list = []          # keys waiting to go online (FIFO)
+_POOL_QUEUE_LOCK = threading.Lock()
+
 TOKEN_CACHE_FILE = os.path.join(DATA_DIR, "token_cache.json")
 TOKEN_CACHE_TTL = 7 * 3600  # 7 hours valid
 _TOKEN_CACHE = {}
@@ -1179,7 +1189,11 @@ def _run_bot(key):
                         acc_now["status"] = "EXPIRED"
                     _mark_dirty()
 
-    threading.Thread(target=_runner, daemon=True, name=f"MAHIR_bot_{key}").start()
+    def _runner_wrapped():
+        _runner()
+        _pool_on_account_done(key)   # one-shot pool: start next account
+
+    threading.Thread(target=_runner_wrapped, daemon=True, name=f"MAHIR_bot_{key}").start()
 
 
 def _stop_bot(key):
@@ -1190,6 +1204,71 @@ def _stop_bot(key):
         r["stop"].set()
     if e:
         e.set()
+
+
+# ── One-Shot Pool Helpers ──────────────────────────────────────────────────
+
+def _pool_active_count():
+    """Return number of keys that are currently running (in RUNNERS)."""
+    with _state_lock:
+        return sum(1 for k in ACCOUNTS if k in RUNNERS)
+
+
+def _pool_enqueue(key):
+    """Add key to waiting queue if not already present."""
+    with _POOL_QUEUE_LOCK:
+        if key not in _POOL_QUEUE:
+            _POOL_QUEUE.append(key)
+
+
+def _pool_dequeue():
+    """Pop and return the next waiting key (or None)."""
+    with _POOL_QUEUE_LOCK:
+        while _POOL_QUEUE:
+            k = _POOL_QUEUE.pop(0)
+            with _state_lock:
+                acc = ACCOUNTS.get(k)
+                if acc and not acc.get("is_paused") and not acc.get("level_limit_reached"):
+                    return k
+    return None
+
+
+def _pool_try_launch():
+    """
+    If the pool limit is active and there is a free slot, launch the next
+    waiting account.  Called whenever an account finishes or is stopped.
+    """
+    if ONLINE_SLOT_LIMIT <= 0:
+        return                              # unlimited mode – nothing to do
+
+    active = _pool_active_count()
+    if active >= ONLINE_SLOT_LIMIT:
+        return
+
+    slots_free = ONLINE_SLOT_LIMIT - active
+    for _ in range(slots_free):
+        key = _pool_dequeue()
+        if not key:
+            break
+        with _state_lock:
+            acc = ACCOUNTS.get(key)
+            if acc:
+                acc["status"] = "CONNECTING"
+                acc["is_paused"] = False
+                if ONLINE_SLOT_LVL_LIMIT > 0:
+                    acc["level_limit"] = ONLINE_SLOT_LVL_LIMIT
+                _mark_dirty()
+        _run_bot(key)
+
+
+def _pool_on_account_done(key):
+    """
+    Called (from _runner's finally block) when an account's bot thread exits.
+    Removes the account from pool-managed view and starts the next one.
+    """
+    if ONLINE_SLOT_LIMIT <= 0:
+        return
+    _pool_try_launch()
 
 
 def _boot_saved_accounts():
@@ -1205,6 +1284,26 @@ def _boot_saved_accounts():
                 and not acc.get("level_limit_reached")
                 and not acc.get("exp_limit_reached")
             ]
+
+        if ONLINE_SLOT_LIMIT > 0:
+            # Apply global lvl-limit to all accounts if set
+            if ONLINE_SLOT_LVL_LIMIT > 0:
+                with _state_lock:
+                    for k in keys:
+                        acc = ACCOUNTS.get(k)
+                        if acc and not acc.get("level_limit"):
+                            acc["level_limit"] = ONLINE_SLOT_LVL_LIMIT
+            # First ONLINE_SLOT_LIMIT accounts start immediately; rest queue
+            launch_now = keys[:ONLINE_SLOT_LIMIT]
+            for k in keys[ONLINE_SLOT_LIMIT:]:
+                _pool_enqueue(k)
+                with _state_lock:
+                    acc = ACCOUNTS.get(k)
+                    if acc:
+                        acc["status"] = "QUEUED"
+                        _mark_dirty()
+            keys = launch_now
+
         for k in keys:
             _run_bot(k)
             time.sleep(2.5)
@@ -1682,9 +1781,17 @@ def api_system_start_all():
         count = len(ACCOUNTS)
 
     def _start_batch(keys):
-        for k in keys:
-            _run_bot(k)
-            time.sleep(2.5)
+        if ONLINE_SLOT_LIMIT <= 0:
+            for k in keys:
+                _run_bot(k)
+                time.sleep(2.5)
+        else:
+            # Clear and re-build the queue
+            with _POOL_QUEUE_LOCK:
+                _POOL_QUEUE.clear()
+            for k in keys:
+                _pool_enqueue(k)
+            _pool_try_launch()
 
     threading.Thread(target=_start_batch, args=(to_start,), daemon=True).start()
     return jsonify({"status": "ok", "count": count})
@@ -1779,6 +1886,202 @@ def download_accounts():
         mimetype="application/json",
         headers={"Content-Disposition": "attachment; filename=accounts.json"},
     )
+
+
+# ── JSON File Upload (MAHIR_ID_GEN_NSOMAF format) ────────────────────────────
+@app.post("/api/accounts/upload-json")
+def api_accounts_upload_json():
+    """
+    Accept a JSON file upload containing accounts in the MAHIR_ID_GEN_NSOMAF
+    format:
+        [{"uid": 12345, "password": "MAHIR_XYZ", ...}, ...]
+    OR the standard app format:
+        {"accounts": [...]}
+    OR a plain list in standard format.
+
+    Returns how many were added / skipped and kicks off pool-aware launch.
+    """
+    # Support both multipart file upload AND raw JSON body
+    raw_data = None
+    if request.content_type and "multipart" in request.content_type:
+        f = request.files.get("file")
+        if not f:
+            return jsonify({"status": "error", "error": "No file uploaded"}), 400
+        try:
+            raw_data = json.loads(f.read().decode("utf-8"))
+        except Exception as exc:
+            return jsonify({"status": "error", "error": f"Invalid JSON: {exc}"}), 400
+    else:
+        raw_data = request.get_json(force=True, silent=True)
+        if raw_data is None:
+            return jsonify({"status": "error", "error": "Invalid JSON body"}), 400
+
+    # Normalise to a plain list of dicts
+    if isinstance(raw_data, dict):
+        rows = raw_data.get("accounts", [])
+    elif isinstance(raw_data, list):
+        rows = raw_data
+    else:
+        return jsonify({"status": "error", "error": "JSON must be a list or {accounts:[...]}"}), 400
+
+    # Map MAHIR_ID_GEN fields → standard fields expected by _upsert_account_entry
+    def _map_row(r):
+        if not isinstance(r, dict):
+            return None
+        mapped = dict(r)
+        # uid can be int – stringify it
+        if "uid" in mapped:
+            mapped["uid"] = str(mapped["uid"])
+        # password field is already called "password" – nothing to do
+        # Support jwt_token as the token field
+        if "jwt_token" in mapped and "token" not in mapped:
+            mapped["token"] = mapped["jwt_token"]
+        # Carry across exp / level
+        for src, dst in [("exp", "exp"), ("level", "level"),
+                         ("name", "nickname"), ("account_id", "game_uid")]:
+            if src in mapped and dst not in mapped:
+                mapped[dst] = mapped[src]
+        return mapped
+
+    added = 0
+    skipped = 0
+    added_keys = []
+    to_launch = []
+
+    for row in rows:
+        item = _map_row(row)
+        if not item:
+            skipped += 1
+            continue
+        key, existed = _upsert_account_entry(item)
+        if not key:
+            skipped += 1
+            continue
+        if existed:
+            skipped += 1
+        else:
+            added += 1
+            added_keys.append(key)
+        to_launch.append(key)
+
+    # Apply pool-level lvl limit to newly added accounts
+    if ONLINE_SLOT_LVL_LIMIT > 0:
+        with _state_lock:
+            for k in added_keys:
+                acc = ACCOUNTS.get(k)
+                if acc and not acc.get("level_limit"):
+                    acc["level_limit"] = ONLINE_SLOT_LVL_LIMIT
+            _mark_dirty()
+
+    def _launch_pool_aware(keys):
+        if ONLINE_SLOT_LIMIT <= 0:
+            # Unlimited – launch everything with stagger
+            for k in keys:
+                _run_bot(k)
+                time.sleep(2.5)
+        else:
+            # Enqueue all; _pool_try_launch fills free slots
+            for k in keys:
+                _pool_enqueue(k)
+                with _state_lock:
+                    acc = ACCOUNTS.get(k)
+                    if acc and acc.get("status") not in ("ONLINE", "IN_MATCH", "SEARCHING", "CONNECTING"):
+                        acc["status"] = "QUEUED"
+                        _mark_dirty()
+            _pool_try_launch()
+
+    threading.Thread(target=_launch_pool_aware, args=(to_launch,), daemon=True).start()
+    return jsonify({
+        "status": "ok",
+        "added": added,
+        "skipped": skipped,
+        "total_in_file": len(rows),
+        "uids": added_keys,
+    })
+
+
+# ── One-Shot Pool Config API ──────────────────────────────────────────────────
+@app.get("/api/system/pool-config")
+def api_pool_config_get():
+    """Return current One-Shot pool settings."""
+    with _POOL_QUEUE_LOCK:
+        queue_len = len(_POOL_QUEUE)
+    return jsonify({
+        "online_slot_limit": ONLINE_SLOT_LIMIT,
+        "lvl_limit": ONLINE_SLOT_LVL_LIMIT,
+        "active_bots": _pool_active_count(),
+        "queued_bots": queue_len,
+    })
+
+
+@app.post("/api/system/pool-config")
+def api_pool_config_set():
+    """
+    Set One-Shot pool settings at runtime.
+
+    Body: {"online_limit": 10, "lvl_limit": 3}
+      online_limit  – max bots online simultaneously (0 = unlimited)
+      lvl_limit     – level at which a bot is considered done and replaced
+                      (0 = use whatever each account has set individually)
+    """
+    global ONLINE_SLOT_LIMIT, ONLINE_SLOT_LVL_LIMIT
+
+    d = request.get_json(force=True, silent=True) or {}
+
+    ol = d.get("online_limit")
+    if ol is not None:
+        try:
+            ol = int(str(ol).strip())
+            if ol < 0:
+                return jsonify({"status": "error", "error": "online_limit must be >= 0"}), 400
+            ONLINE_SLOT_LIMIT = ol
+        except (ValueError, TypeError):
+            return jsonify({"status": "error", "error": "Invalid online_limit"}), 400
+
+    ll = d.get("lvl_limit")
+    if ll is not None:
+        try:
+            ll = int(str(ll).strip())
+            if not (0 <= ll <= 100):
+                return jsonify({"status": "error", "error": "lvl_limit must be 0-100"}), 400
+            ONLINE_SLOT_LVL_LIMIT = ll
+            # Apply to all accounts that don't have a custom level_limit yet
+            if ll > 0:
+                with _state_lock:
+                    for acc in ACCOUNTS.values():
+                        if not acc.get("level_limit"):
+                            acc["level_limit"] = ll
+                    _mark_dirty()
+        except (ValueError, TypeError):
+            return jsonify({"status": "error", "error": "Invalid lvl_limit"}), 400
+
+    # If we just enabled or relaxed the limit, try to fill free slots
+    if ONLINE_SLOT_LIMIT > 0:
+        threading.Thread(target=_pool_try_launch, daemon=True).start()
+
+    with _POOL_QUEUE_LOCK:
+        queue_len = len(_POOL_QUEUE)
+
+    return jsonify({
+        "status": "ok",
+        "online_slot_limit": ONLINE_SLOT_LIMIT,
+        "lvl_limit": ONLINE_SLOT_LVL_LIMIT,
+        "active_bots": _pool_active_count(),
+        "queued_bots": queue_len,
+    })
+
+
+# ── Pool Queue Status ─────────────────────────────────────────────────────────
+@app.get("/api/system/pool-queue")
+def api_pool_queue():
+    """Return full list of queued account keys."""
+    with _POOL_QUEUE_LOCK:
+        queue_snapshot = list(_POOL_QUEUE)
+    return jsonify({
+        "status": "ok",
+        "queued": len(queue_snapshot),
+        "queue": queue_snapshot,
+    })
 
 
 if __name__ == "__main__":
