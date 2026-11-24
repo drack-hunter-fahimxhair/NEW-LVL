@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#050505">
-    <title>JXE LEVEL PRO | FreeFire Level Up Bot Dashboard</title>
+    <title>MAHIR LEVEL PRO | FreeFire Level Up Bot Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -327,15 +327,15 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
     .brand-text .live-tag{font-size:7px;padding:3px 7px;min-height:17px}
 }
 
-/* Premium JXE brand lockup */
-.brand-text .jxe-brand{
+/* Premium MAHIR brand lockup */
+.brand-text .MAHIR-brand{
     display:flex;
     align-items:center;
     gap:9px;
     line-height:1;
     white-space:nowrap;
 }
-.brand-text .jxe-main{
+.brand-text .MAHIR-main{
     position:relative;
     font-size:24px;
     font-weight:900;
@@ -343,7 +343,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
     color:#fff;
     text-shadow:0 0 24px rgba(255,255,255,.12);
 }
-.brand-text .jxe-main::after{
+.brand-text .MAHIR-main::after{
     content:"";
     position:absolute;
     left:0;
@@ -354,19 +354,19 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
     transform-origin:left;
     animation:brand-line 2.8s ease-in-out infinite;
 }
-.brand-text .jxe-divider{
+.brand-text .MAHIR-divider{
     width:1px;
     height:19px;
     background:linear-gradient(180deg,transparent,#777,transparent);
 }
-.brand-text .jxe-level{
+.brand-text .MAHIR-level{
     font-size:12px;
     font-weight:700;
     letter-spacing:.16em;
     color:#a7a7a7;
     text-transform:uppercase;
 }
-.brand-text .jxe-pro{
+.brand-text .MAHIR-pro{
     position:relative;
     display:inline-flex;
     align-items:center;
@@ -381,7 +381,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
     box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 0 18px rgba(255,255,255,.035);
     overflow:hidden;
 }
-.brand-text .jxe-pro::before{
+.brand-text .MAHIR-pro::before{
     content:"";
     position:absolute;
     inset:0;
@@ -389,7 +389,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
     transform:translateX(-130%);
     animation:brand-pro-shine 3.2s ease-in-out infinite;
 }
-.brand-text .jxe-pro span{position:relative;z-index:1}
+.brand-text .MAHIR-pro span{position:relative;z-index:1}
 @keyframes brand-line{
     0%,100%{opacity:.35;transform:scaleX(.45)}
     50%{opacity:1;transform:scaleX(1)}
@@ -399,10 +399,10 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
     75%,100%{transform:translateX(130%)}
 }
 @media(max-width:650px){
-    .brand-text .jxe-main{font-size:20px}
-    .brand-text .jxe-level{font-size:10px}
-    .brand-text .jxe-pro{font-size:8px;padding:4px 7px}
-    .brand-text .jxe-divider{height:16px}
+    .brand-text .MAHIR-main{font-size:20px}
+    .brand-text .MAHIR-level{font-size:10px}
+    .brand-text .MAHIR-pro{font-size:8px;padding:4px 7px}
+    .brand-text .MAHIR-divider{height:16px}
 }
     
 /* Smooth premium motion */
@@ -920,11 +920,11 @@ body.modal-open{overflow:hidden}
                     <i class="fa-solid fa-bolt"></i>
                 </div>
                 <div class="brand-text">
-                    <h1 class="jxe-brand">
-    <span class="jxe-main">JXE</span>
-    <span class="jxe-divider"></span>
-    <span class="jxe-level">LEVEL UP</span>
-    <span class="jxe-pro"><span>PRO</span></span>
+                    <h1 class="MAHIR-brand">
+    <span class="MAHIR-main">MAHIR</span>
+    <span class="MAHIR-divider"></span>
+    <span class="MAHIR-level">LEVEL UP</span>
+    <span class="MAHIR-pro"><span>PRO</span></span>
 </h1>
                     <p>
                         <span class="live-tag"><span class="pulse-dot"></span> System Live</span>
@@ -2381,10 +2381,10 @@ let startTime = Date.now();
             panel.classList.toggle('is-collapsed', collapsed);
             button.setAttribute('aria-expanded', String(!collapsed));
             button.title = collapsed ? 'Show Command Center and action buttons' : 'Hide Command Center action buttons';
-            try { localStorage.setItem('jxe-command-center-collapsed', collapsed ? '1' : '0'); } catch (_) {}
+            try { localStorage.setItem('MAHIR-command-center-collapsed', collapsed ? '1' : '0'); } catch (_) {}
         }
         (function restoreCommandCenterState() {
-            try { if (localStorage.getItem('jxe-command-center-collapsed') === '1') toggleCommandCenterCollapse(true); } catch (_) {}
+            try { if (localStorage.getItem('MAHIR-command-center-collapsed') === '1') toggleCommandCenterCollapse(true); } catch (_) {}
         })();
         function updateCommandCenter(data) {
             const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = formatNumber(v || 0); };
