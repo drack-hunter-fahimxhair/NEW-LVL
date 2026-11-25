@@ -1341,7 +1341,7 @@ def _format_account_for_stats(acc, now):
         status = "STOPPED"
     elif acc.get("exp_limit_reached"):
         status = "EXPIRED"
-    elif not is_running and status not in ("CONNECTING", "PAUSED", "STOPPED", "EXPIRED"):
+    elif not is_running and status not in ("CONNECTING", "PAUSED", "STOPPED", "EXPIRED", "QUEUED"):
         status = "CONNECTING"
 
     task_started = float(acc.get("task_started_at") or 0)
@@ -1404,9 +1404,10 @@ def api_stats():
             total_matches += item["matches_played"]
             if item["status"] == "PAUSED":
                 paused_count += 1
-            elif item["status"] not in ("STOPPED", "EXPIRED"):
+            elif item["status"] not in ("STOPPED", "EXPIRED", "QUEUED"):
                 running_count += 1
-                if key not in RUNNERS:
+                # Only auto-start if not pool-managed (QUEUED accounts are pool's job)
+                if key not in RUNNERS and acc.get("status") != "QUEUED":
                     to_start.append(key)
 
     for key in to_start:
@@ -1818,16 +1819,35 @@ def api_system_delete_all():
     if str(d.get("confirm", "")).upper() != "DELETE":
         return jsonify({"status": "error", "error": "Confirmation required"}), 400
 
+    # 1. Signal every running bot to stop BEFORE clearing state
     with _state_lock:
-        keys = list(ACCOUNTS.keys())
-        count = len(keys)
+        runner_stops = [(r["stop"], EXP_STOPS.get(k)) for k, r in RUNNERS.items()]
+
+    for stop_evt, exp_evt in runner_stops:
+        try:
+            stop_evt.set()
+        except Exception:
+            pass
+        if exp_evt:
+            try:
+                exp_evt.set()
+            except Exception:
+                pass
+
+    # 2. Clear ALL in-memory state (accounts + sessions + runners + logs + pool queue)
+    with _state_lock:
+        count = len(ACCOUNTS)
         ACCOUNTS.clear()
         LOGS.clear()
         SESSIONS.clear()
+        RUNNERS.clear()
+        EXP_STOPS.clear()
         _mark_dirty()
 
-    for k in keys:
-        _stop_bot(k)
+    # 3. Clear pool queue
+    with _POOL_QUEUE_LOCK:
+        _POOL_QUEUE.clear()
+
     _flush_to_disk()
     return jsonify({"status": "ok", "count": count})
 
