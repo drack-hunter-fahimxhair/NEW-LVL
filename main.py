@@ -678,15 +678,26 @@ async def run_udp_match(match_no, key, acc_id, server, udp_key, token, match_id,
         log_err(f"[MATCH #{match_no}] UDP session error: {e}")
     finally:
         with _state_lock:
-            cur = ACCOUNTS.get(key)
-            if cur:
-                active = max(0, int(cur.get("active_matches", 1) or 1) - 1)
-                cur["active_matches"] = active
-                cur["matches_played"] = int(cur.get("matches_played", 0) or 0) + 1
-                if active == 0 and cur.get("status") == "IN_MATCH":
-                    cur["status"] = "ONLINE"
-                cur["last_update"] = time.time()
-                cur["updated_at"] = _now_iso()
+            cur = RUNNERS.get(key)
+            # delete-all এর পরে upload হলে নতুন runner আসতে পারে —
+            # সেক্ষেত্রে পুরোনো thread shared state ছুঁবে না।
+            if cur is not None and cur.get("stop") is not stop_evt:
+                return
+            e = EXP_STOPS.pop(key, None)
+            if e:
+                e.set()
+            SESSIONS.pop(key, None)
+            RUNNERS.pop(key, None)
+            acc_now = ACCOUNTS.get(key)
+            if acc_now:
+                acc_now["active_matches"] = 0
+                acc_now["task_started_at"] = 0
+                if acc_now.get("is_paused"):
+                    acc_now["status"] = "PAUSED"
+                elif acc_now.get("level_limit_reached"):
+                    acc_now["status"] = "STOPPED"
+                elif acc_now.get("exp_limit_reached"):
+                    acc_now["status"] = "EXPIRED"
                 _mark_dirty()
 
         tot = cur.get("matches_played", 0) if cur else 0
@@ -808,8 +819,13 @@ def _run_bot(key):
             return
         if _check_limits_locked(acc):
             return
-        if key in RUNNERS:
-            return
+        existing = RUNNERS.get(key)
+        if existing is not None:
+            # আগের runner যদি wind-down হচ্ছে, takeover করো
+            if existing.get("stop") and existing["stop"].is_set():
+                del RUNNERS[key]
+            else:
+                return          # active runner, double-start করো না
         stop_evt = threading.Event()
         RUNNERS[key] = {"stop": stop_evt, "log": LOGS.setdefault(key, [])}
         acc_type = acc.get("type", "guest")
@@ -1341,7 +1357,7 @@ def _format_account_for_stats(acc, now):
         status = "STOPPED"
     elif acc.get("exp_limit_reached"):
         status = "EXPIRED"
-    elif not is_running and status not in ("CONNECTING", "PAUSED", "STOPPED", "EXPIRED", "QUEUED"):
+    elif not is_running and status not in ("CONNECTING", "PAUSED", "STOPPED", "EXPIRED"):
         status = "CONNECTING"
 
     task_started = float(acc.get("task_started_at") or 0)
@@ -1404,10 +1420,9 @@ def api_stats():
             total_matches += item["matches_played"]
             if item["status"] == "PAUSED":
                 paused_count += 1
-            elif item["status"] not in ("STOPPED", "EXPIRED", "QUEUED"):
+            elif item["status"] not in ("STOPPED", "EXPIRED"):
                 running_count += 1
-                # Only auto-start if not pool-managed (QUEUED accounts are pool's job)
-                if key not in RUNNERS and acc.get("status") != "QUEUED":
+                if key not in RUNNERS:
                     to_start.append(key)
 
     for key in to_start:
@@ -1819,34 +1834,50 @@ def api_system_delete_all():
     if str(d.get("confirm", "")).upper() != "DELETE":
         return jsonify({"status": "error", "error": "Confirmation required"}), 400
 
-    # 1. Signal every running bot to stop BEFORE clearing state
     with _state_lock:
-        runner_stops = [(r["stop"], EXP_STOPS.get(k)) for k, r in RUNNERS.items()]
-
-    for stop_evt, exp_evt in runner_stops:
-        try:
-            stop_evt.set()
-        except Exception:
-            pass
-        if exp_evt:
-            try:
-                exp_evt.set()
-            except Exception:
-                pass
-
-    # 2. Clear ALL in-memory state (accounts + sessions + runners + logs + pool queue)
-    with _state_lock:
-        count = len(ACCOUNTS)
+        keys = list(ACCOUNTS.keys())
+        count = len(keys)
         ACCOUNTS.clear()
         LOGS.clear()
         SESSIONS.clear()
-        RUNNERS.clear()
-        EXP_STOPS.clear()
         _mark_dirty()
 
-    # 3. Clear pool queue
+    # সব bot thread-এ stop signal পাঠাও
+    for k in keys:
+        _stop_bot(k)
+
+    # bot thread গুলো নিজে নিজে পরিষ্কার হওয়ার জন্য অপেক্ষা করো
+    deadline = time.time() + 10.0
+    while time.time() < deadline:
+        with _state_lock:
+            if not RUNNERS and not EXP_STOPS:
+                break
+        time.sleep(0.2)
+
+    # বাকি থাকা সব runner bookkeeping জোর করে clear করো
+    with _state_lock:
+        for ev in list(EXP_STOPS.values()):
+            try:
+                ev.set()
+            except Exception:
+                pass
+        EXP_STOPS.clear()
+        for r in list(RUNNERS.values()):
+            try:
+                if r.get("stop"):
+                    r["stop"].set()
+            except Exception:
+                pass
+        RUNNERS.clear()
+
+    # পুরোনো pool queue পরিষ্কার করো
     with _POOL_QUEUE_LOCK:
         _POOL_QUEUE.clear()
+
+    # token cache clear করো যাতে নতুন করে login হয়
+    with _TOKEN_CACHE_LOCK:
+        _TOKEN_CACHE.clear()
+    _save_token_cache()
 
     _flush_to_disk()
     return jsonify({"status": "ok", "count": count})
@@ -2105,6 +2136,6 @@ def api_pool_queue():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
+    port = int(os.environ.get("PORT", 3333))
     log_banner(port)
     app.run(host="0.0.0.0", port=port, debug=False, threaded=True)
