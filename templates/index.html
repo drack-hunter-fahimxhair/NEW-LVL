@@ -1,655 +1,1728 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>MAHIR LEVEL PRO</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAHIR LEVEL PRO — Dashboard</title>
 <style>
+/* ═══════════════════════════════════════════════════════════
+   BASE
+   ═══════════════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0a0c10;--surface:#111318;--surface2:#181c24;--surface3:#1e2330;
-  --border:#232838;--border2:#2d3447;
-  --accent:#00e5ff;--accent2:#7c4dff;--green:#00e676;--red:#ff1744;
-  --yellow:#ffea00;--orange:#ff6d00;--pink:#f50057;
-  --text:#e8ecf0;--text2:#8892a4;--text3:#4e5a6e;
-  --radius:10px;--shadow:0 4px 24px rgba(0,0,0,.5);
+  --bg:#080b14; --bg-2:#0e1424; --card:#0d1526; --card-2:#141d33;
+  --card-3:#1a2642; --border:#1c2842; --border-2:#2a3a5c;
+  --text:#e8eef9; --text-2:#c5cfe3; --muted:#7a8aa8;
+  --accent:#00e5a8; --accent-2:#00c48c; --accent-dim:rgba(0,229,168,0.15);
+  --blue:#3b82f6; --purple:#a855f7; --orange:#f59e0b;
+  --red:#ef4444; --pink:#ec4899; --green:#22c55e;
+  --yellow:#eab308; --teal:#14b8a6; --cyan:#06b6d4;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.4);
+  --shadow:0 4px 24px rgba(0,0,0,0.4);
+  --shadow-lg:0 12px 48px rgba(0,0,0,0.6);
+  --shadow-glow:0 0 24px rgba(0,229,168,0.2);
+  --radius:14px; --radius-md:10px; --radius-sm:8px;
+  --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
-
-/* ── TOP BAR ── */
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;backdrop-filter:blur(8px)}
-.logo{font-size:1.1rem;font-weight:800;letter-spacing:.08em;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.topbar-right{display:flex;gap:10px;align-items:center}
-.uptime{font-size:.75rem;color:var(--text2);background:var(--surface2);padding:4px 10px;border-radius:20px;border:1px solid var(--border)}
-
-/* ── STAT CARDS ── */
-.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;padding:18px 24px 0}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;transition:border-color .2s}
-.stat-card:hover{border-color:var(--border2)}
-.stat-val{font-size:1.6rem;font-weight:800;line-height:1}
-.stat-lbl{font-size:.7rem;color:var(--text2);margin-top:6px;text-transform:uppercase;letter-spacing:.06em}
-.c-cyan{color:var(--accent)} .c-green{color:var(--green)} .c-orange{color:var(--orange)}
-.c-purple{color:var(--accent2)} .c-yellow{color:var(--yellow)} .c-red{color:var(--red)}
-
-/* ── TOOLBAR ── */
-.toolbar{display:flex;flex-wrap:wrap;gap:10px;padding:16px 24px;align-items:center}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:.82rem;font-weight:600;transition:all .15s;white-space:nowrap}
-.btn-primary{background:var(--accent);color:#000}
-.btn-primary:hover{background:#33eeff}
-.btn-success{background:var(--green);color:#000}
-.btn-success:hover{filter:brightness(1.1)}
-.btn-danger{background:var(--red);color:#fff}
-.btn-danger:hover{filter:brightness(1.2)}
-.btn-warn{background:var(--orange);color:#000}
-.btn-warn:hover{filter:brightness(1.1)}
-.btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border2)}
-.btn-ghost:hover{background:var(--surface3);border-color:var(--accent)}
-.btn-purple{background:var(--accent2);color:#fff}
-.btn-purple:hover{filter:brightness(1.15)}
-.btn:disabled{opacity:.4;cursor:not-allowed}
-
-/* ── POOL CONFIG BAR ── */
-.pool-bar{display:flex;flex-wrap:wrap;gap:10px;padding:0 24px 14px;align-items:center}
-.pool-bar label{font-size:.78rem;color:var(--text2);display:flex;align-items:center;gap:6px}
-.pool-bar input[type=number]{width:70px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text);padding:5px 8px;font-size:.82rem}
-.pool-bar input[type=number]:focus{outline:none;border-color:var(--accent)}
-.pool-status{font-size:.75rem;padding:4px 10px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);color:var(--text2)}
-
-/* ── SEARCH ── */
-.search-row{padding:0 24px 14px;display:flex;gap:10px}
-.search-box{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);padding:8px 14px;font-size:.85rem}
-.search-box:focus{outline:none;border-color:var(--accent)}
-.filter-sel{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);padding:8px 10px;font-size:.82rem;cursor:pointer}
-.filter-sel:focus{outline:none;border-color:var(--accent)}
-
-/* ── TABLE ── */
-.table-wrap{padding:0 24px 24px;overflow-x:auto}
-table{width:100%;border-collapse:collapse;min-width:900px}
-thead th{background:var(--surface2);color:var(--text2);font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;padding:10px 12px;border-bottom:1px solid var(--border2);font-weight:600;white-space:nowrap;text-align:left}
-tbody tr{border-bottom:1px solid var(--border);transition:background .12s}
-tbody tr:hover{background:var(--surface2)}
-tbody td{padding:10px 12px;font-size:.82rem;vertical-align:middle}
-.uid-cell{font-family:monospace;font-size:.78rem;color:var(--accent);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.nick-cell{max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
-
-/* STATUS BADGE */
-.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.7rem;font-weight:700;letter-spacing:.04em;white-space:nowrap}
-.badge-online{background:rgba(0,230,118,.15);color:var(--green);border:1px solid rgba(0,230,118,.35)}
-.badge-match{background:rgba(0,229,255,.15);color:var(--accent);border:1px solid rgba(0,229,255,.35)}
-.badge-search{background:rgba(124,77,255,.15);color:var(--accent2);border:1px solid rgba(124,77,255,.35)}
-.badge-connecting{background:rgba(255,109,0,.12);color:var(--orange);border:1px solid rgba(255,109,0,.3)}
-.badge-paused{background:rgba(136,146,164,.1);color:var(--text2);border:1px solid var(--border2)}
-.badge-stopped{background:rgba(255,23,68,.12);color:var(--red);border:1px solid rgba(255,23,68,.3)}
-.badge-expired{background:rgba(255,234,0,.1);color:var(--yellow);border:1px solid rgba(255,234,0,.3)}
-.badge-queued{background:rgba(255,109,0,.1);color:#ffb300;border:1px solid rgba(255,180,0,.3)}
-.badge-cooldown{background:rgba(255,0,87,.1);color:var(--pink);border:1px solid rgba(255,0,87,.3)}
-
-/* PROGRESS BAR */
-.prog-wrap{background:var(--surface3);border-radius:4px;height:5px;width:100%;min-width:80px}
-.prog-fill{height:100%;border-radius:4px;transition:width .4s}
-
-/* ROW ACTIONS */
-.row-actions{display:flex;gap:5px}
-.row-btn{padding:4px 10px;border-radius:6px;border:none;cursor:pointer;font-size:.72rem;font-weight:600;transition:all .15s}
-.rb-start{background:rgba(0,230,118,.2);color:var(--green)}
-.rb-start:hover{background:rgba(0,230,118,.35)}
-.rb-pause{background:rgba(255,109,0,.2);color:var(--orange)}
-.rb-pause:hover{background:rgba(255,109,0,.35)}
-.rb-del{background:rgba(255,23,68,.2);color:var(--red)}
-.rb-del:hover{background:rgba(255,23,68,.35)}
-.rb-log{background:rgba(0,229,255,.12);color:var(--accent)}
-.rb-log:hover{background:rgba(0,229,255,.25)}
-
-/* ── MODALS ── */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;padding:20px}
-.modal-bg.open{display:flex}
-.modal{background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:28px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow)}
-.modal h2{font-size:1.1rem;margin-bottom:18px;color:var(--accent)}
-.modal label{display:block;font-size:.8rem;color:var(--text2);margin-bottom:5px;margin-top:12px}
-.modal input,.modal textarea,.modal select{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);padding:9px 12px;font-size:.85rem}
-.modal input:focus,.modal textarea:focus{outline:none;border-color:var(--accent)}
-.modal textarea{resize:vertical;min-height:80px;font-family:monospace}
-.modal-footer{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
-.close-x{float:right;cursor:pointer;color:var(--text2);font-size:1.3rem;line-height:1;background:none;border:none}
-.close-x:hover{color:var(--text)}
-
-/* LOG MODAL */
-.log-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;font-family:monospace;font-size:.75rem;color:var(--text2);max-height:380px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
-
-/* UPLOAD ZONE */
-.upload-zone{border:2px dashed var(--border2);border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:12px}
-.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(0,229,255,.04)}
-.upload-zone p{color:var(--text2);font-size:.85rem;margin-top:8px}
-.upload-zone input{display:none}
-
-/* TOAST */
-#toast{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.toast-item{padding:12px 18px;border-radius:10px;font-size:.83rem;font-weight:600;animation:slideIn .25s ease;pointer-events:auto;max-width:340px;border:1px solid transparent}
-.toast-ok{background:rgba(0,230,118,.15);color:var(--green);border-color:rgba(0,230,118,.3)}
-.toast-err{background:rgba(255,23,68,.15);color:var(--red);border-color:rgba(255,23,68,.3)}
-.toast-info{background:rgba(0,229,255,.12);color:var(--accent);border-color:rgba(0,229,255,.25)}
-@keyframes slideIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
-
-/* EMPTY STATE */
-.empty{text-align:center;padding:60px 20px;color:var(--text3)}
-.empty svg{opacity:.3;margin-bottom:16px}
-.empty p{font-size:.9rem}
-
-/* SECTION HEADER */
-.section-title{padding:0 24px 10px;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-weight:700}
+html,body{
+  background:var(--bg); color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:14px; line-height:1.5; min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(1400px 900px at 10% -10%, rgba(0,229,168,0.06), transparent 50%),
+    radial-gradient(1000px 700px at 90% 110%, rgba(59,130,246,0.05), transparent 50%),
+    radial-gradient(800px 500px at 50% 50%, rgba(168,85,247,0.02), transparent 60%);
+}
+.app{position:relative; z-index:1; max-width:1680px; margin:0 auto; padding:22px 26px 100px}
 
 /* scrollbar */
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:var(--bg-2)}
+::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:6px;border:2px solid var(--bg-2)}
+::-webkit-scrollbar-thumb:hover{background:var(--border-2);filter:brightness(1.3)}
+
+/* ═══════════════════════════════════════════════════════════
+   HEADER
+   ═══════════════════════════════════════════════════════════ */
+.header{
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
+  gap:20px; padding:22px 26px; margin-bottom:22px;
+  background:linear-gradient(135deg,var(--card) 0%,var(--card-2) 100%);
+  border:1px solid var(--border); border-radius:var(--radius);
+  box-shadow:var(--shadow); position:relative; overflow:hidden;
+}
+.header::after{
+  content:""; position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),var(--blue),transparent);
+  opacity:0.8;
+}
+.brand{display:flex; align-items:center; gap:16px; z-index:1}
+.brand-logo{
+  width:52px; height:52px; border-radius:14px;
+  background:linear-gradient(135deg,var(--accent),var(--blue));
+  display:grid; place-items:center; font-weight:800; font-size:22px;
+  color:#050a12; box-shadow:0 4px 20px rgba(0,229,168,0.4);
+  position:relative; overflow:hidden;
+}
+.brand-logo::after{
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(135deg,transparent 40%,rgba(255,255,255,0.3) 50%,transparent 60%);
+  animation:shine 3s ease-in-out infinite;
+}
+@keyframes shine{0%,100%{transform:translateX(-100%)}50%{transform:translateX(100%)}}
+.brand-text h1{font-size:20px; font-weight:800; letter-spacing:0.3px}
+.brand-text h1 span{color:var(--accent); text-shadow:0 0 12px rgba(0,229,168,0.4)}
+.brand-text p{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1.6px; margin-top:3px; font-weight:600}
+
+.header-stats{display:flex; gap:28px; flex-wrap:wrap; z-index:1}
+.hstat{text-align:right}
+.hstat .v{
+  font-size:24px; font-weight:800; line-height:1;
+  font-family:var(--font-mono); letter-spacing:-0.5px;
+  transition:color 0.3s;
+}
+.hstat .v.accent{color:var(--accent)}
+.hstat .v.blue{color:var(--blue)}
+.hstat .v.orange{color:var(--orange)}
+.hstat .v.purple{color:var(--purple)}
+.hstat .v.pink{color:var(--pink)}
+.hstat .l{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1.2px; margin-top:6px; font-weight:700}
+
+/* ═══════════════════════════════════════════════════════════
+   GRID
+   ═══════════════════════════════════════════════════════════ */
+.grid-2{display:grid; grid-template-columns:1fr 1fr; gap:22px; margin-bottom:22px}
+@media(max-width:980px){.grid-2{grid-template-columns:1fr}}
+
+/* ═══════════════════════════════════════════════════════════
+   CARD
+   ═══════════════════════════════════════════════════════════ */
+.card{
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius); padding:22px; box-shadow:var(--shadow);
+  position:relative; transition:border-color 0.2s;
+}
+.card:hover{border-color:var(--border-2)}
+.card-title{
+  display:flex; align-items:center; gap:10px; font-size:13px; font-weight:800;
+  text-transform:uppercase; letter-spacing:1.3px; color:var(--text);
+  margin-bottom:18px;
+}
+.dot{
+  width:9px; height:9px; border-radius:50%;
+  background:var(--accent); box-shadow:0 0 12px var(--accent);
+  flex-shrink:0;
+}
+.dot.blue{background:var(--blue); box-shadow:0 0 12px var(--blue)}
+.dot.orange{background:var(--orange); box-shadow:0 0 12px var(--orange)}
+.dot.purple{background:var(--purple); box-shadow:0 0 12px var(--purple)}
+.dot.red{background:var(--red); box-shadow:0 0 12px var(--red)}
+.dot.pink{background:var(--pink); box-shadow:0 0 12px var(--pink)}
+
+/* ═══════════════════════════════════════════════════════════
+   POOL VISUAL
+   ═══════════════════════════════════════════════════════════ */
+.pool-visual{
+  background:linear-gradient(135deg,rgba(0,229,168,0.05),rgba(59,130,246,0.03));
+  border:1px solid var(--border-2); border-radius:var(--radius-md);
+  padding:22px; margin-bottom:18px; position:relative; overflow:hidden;
+}
+.pool-visual::before{
+  content:""; position:absolute; inset:0; opacity:0.15; pointer-events:none;
+  background-image:linear-gradient(rgba(0,229,168,0.1) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(0,229,168,0.1) 1px,transparent 1px);
+  background-size:20px 20px;
+}
+.pool-counter{
+  display:flex; align-items:baseline; justify-content:center;
+  gap:8px; margin-bottom:16px; position:relative; z-index:1;
+}
+.pool-counter .active{
+  font-size:42px; font-weight:800; line-height:1;
+  font-family:var(--font-mono);
+  background:linear-gradient(135deg,var(--accent),var(--cyan));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+  text-shadow:0 0 30px rgba(0,229,168,0.5);
+  transition:transform 0.3s;
+}
+.pool-counter .active.bump{animation:bump 0.4s ease-out}
+@keyframes bump{50%{transform:scale(1.15)}}
+.pool-counter .divider{font-size:30px; color:var(--muted); font-weight:400}
+.pool-counter .total{
+  font-size:30px; font-weight:700; color:var(--text); font-family:var(--font-mono);
+}
+.pool-counter .total.infinite{color:var(--purple); text-shadow:0 0 20px rgba(168,85,247,0.4)}
+.slot-bar{
+  width:100%; height:12px; background:var(--bg-2);
+  border-radius:6px; overflow:hidden; border:1px solid var(--border-2);
+  margin-bottom:10px; position:relative; z-index:1;
+}
+.slot-fill{
+  height:100%; border-radius:6px;
+  background:linear-gradient(90deg,var(--accent),var(--cyan));
+  transition:width 0.5s cubic-bezier(0.4,0,0.2,1),background 0.3s;
+  box-shadow:0 0 12px rgba(0,229,168,0.4);
+}
+.slot-fill.medium{background:linear-gradient(90deg,var(--orange),var(--yellow)); box-shadow:0 0 12px rgba(245,158,11,0.4)}
+.slot-fill.full{background:linear-gradient(90deg,var(--red),var(--pink)); box-shadow:0 0 12px rgba(239,68,68,0.4)}
+.pool-labels{
+  display:flex; justify-content:space-between; font-size:11px;
+  color:var(--muted); text-transform:uppercase; letter-spacing:1px;
+  font-weight:700; position:relative; z-index:1;
+}
+.pool-labels .active-lbl{color:var(--accent)}
+.pool-labels .queued{color:var(--orange)}
+
+/* ═══════════════════════════════════════════════════════════
+   FORMS
+   ═══════════════════════════════════════════════════════════ */
+.field{margin-bottom:14px}
+.field label{
+  display:block; font-size:11px; color:var(--muted);
+  text-transform:uppercase; letter-spacing:1px;
+  margin-bottom:7px; font-weight:700;
+}
+input[type=text],input[type=password],input[type=number],textarea,select{
+  width:100%; background:var(--bg-2); border:1px solid var(--border-2);
+  color:var(--text); border-radius:var(--radius-sm);
+  padding:11px 14px; font-size:13px; font-family:inherit;
+  transition:all 0.15s;
+}
+input:focus,textarea:focus,select:focus{
+  outline:none; border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(0,229,168,0.15);
+  background:var(--bg);
+}
+input::placeholder,textarea::placeholder{color:var(--muted); opacity:0.7}
+textarea{
+  resize:vertical; min-height:90px;
+  font-family:var(--font-mono); font-size:12px; line-height:1.6;
+}
+.input-row{display:flex; gap:8px; align-items:stretch}
+.input-row input{flex:1}
+
+/* ═══════════════════════════════════════════════════════════
+   BUTTONS
+   ═══════════════════════════════════════════════════════════ */
+.btn{
+  background:var(--card-2); color:var(--text);
+  border:1px solid var(--border-2); border-radius:var(--radius-sm);
+  padding:11px 18px; font-size:12px; font-weight:700;
+  cursor:pointer; transition:all 0.15s;
+  text-transform:uppercase; letter-spacing:0.7px;
+  display:inline-flex; align-items:center; justify-content:center;
+  gap:7px; font-family:inherit; white-space:nowrap;
+}
+.btn:hover{
+  background:var(--border-2); border-color:#3a5a7c;
+  transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,0.3);
+}
+.btn:active{transform:translateY(0)}
+.btn:disabled{opacity:0.4; cursor:not-allowed; transform:none; box-shadow:none}
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:#050a12; border-color:var(--accent);
+  box-shadow:0 2px 12px rgba(0,229,168,0.3);
+}
+.btn-primary:hover{
+  background:linear-gradient(135deg,#00f5b8,var(--accent));
+  border-color:var(--accent); box-shadow:0 4px 20px rgba(0,229,168,0.4);
+}
+.btn-blue{background:linear-gradient(135deg,var(--blue),#2563eb); border-color:var(--blue); color:#fff}
+.btn-blue:hover{background:linear-gradient(135deg,#60a5fa,var(--blue))}
+.btn-orange{background:linear-gradient(135deg,var(--orange),#d97706); border-color:var(--orange); color:#050a12}
+.btn-orange:hover{background:linear-gradient(135deg,#fbbf24,var(--orange))}
+.btn-red{background:linear-gradient(135deg,var(--red),#dc2626); border-color:var(--red); color:#fff}
+.btn-red:hover{background:linear-gradient(135deg,#f87171,var(--red))}
+.btn-purple{background:linear-gradient(135deg,var(--purple),#7c3aed); border-color:var(--purple); color:#fff}
+.btn-purple:hover{background:linear-gradient(135deg,#c084fc,var(--purple))}
+.btn-ghost{background:transparent; border-color:var(--border-2)}
+.btn-ghost:hover{background:var(--card-2)}
+.btn-full{width:100%}
+.btn-sm{padding:7px 12px; font-size:11px}
+.btn-row{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px}
+.btn-row:last-child{margin-bottom:0}
+.btn-row .btn{flex:1; min-width:0}
+
+/* ═══════════════════════════════════════════════════════════
+   DROPZONE
+   ═══════════════════════════════════════════════════════════ */
+.dropzone{
+  border:2px dashed var(--border-2); border-radius:var(--radius-md);
+  padding:28px 18px; text-align:center; cursor:pointer;
+  transition:all 0.2s; background:var(--bg-2); position:relative;
+}
+.dropzone:hover,.dropzone.drag{
+  border-color:var(--accent); background:rgba(0,229,168,0.06);
+  transform:scale(1.005);
+}
+.dropzone .icon{font-size:38px; margin-bottom:10px; opacity:0.8; transition:transform 0.2s}
+.dropzone:hover .icon{transform:scale(1.1)}
+.dropzone .title{font-size:14px; font-weight:700; color:var(--text); margin-bottom:5px}
+.dropzone .hint{font-size:11.5px; color:var(--muted); line-height:1.6}
+.dropzone .hint b{color:var(--accent)}
+.file-name{font-size:12px; color:var(--accent); margin-top:10px; word-break:break-all; font-weight:600}
+
+/* ═══════════════════════════════════════════════════════════
+   ACCOUNTS TOOLBAR
+   ═══════════════════════════════════════════════════════════ */
+.accounts-toolbar{
+  display:flex; flex-wrap:wrap; gap:12px; align-items:center;
+  justify-content:space-between; margin-bottom:16px;
+}
+.toolbar-left{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+.filters{display:flex; gap:6px; flex-wrap:wrap}
+.filter-chip{
+  padding:7px 14px; font-size:11px; font-weight:700;
+  border-radius:20px; background:var(--bg-2);
+  border:1px solid var(--border-2); color:var(--muted);
+  cursor:pointer; text-transform:uppercase; letter-spacing:0.7px;
+  transition:all 0.15s; font-family:inherit;
+  display:inline-flex; align-items:center; gap:6px;
+}
+.filter-chip:hover{color:var(--text); border-color:#3a5a7c}
+.filter-chip.active{
+  background:var(--accent-dim); border-color:var(--accent); color:var(--accent);
+  box-shadow:0 0 12px rgba(0,229,168,0.15);
+}
+.filter-chip .cnt{
+  background:rgba(255,255,255,0.1); padding:1px 6px;
+  border-radius:8px; font-size:10px; min-width:18px; text-align:center;
+}
+.filter-chip.active .cnt{background:rgba(0,229,168,0.25)}
+.search-box{position:relative; min-width:240px; flex:1; max-width:380px}
+.search-box input{padding-left:38px}
+.search-box::before{
+  content:"🔍"; position:absolute; left:14px; top:50%;
+  transform:translateY(-50%); font-size:13px; opacity:0.5;
+  pointer-events:none;
+}
+.accounts-count{font-size:12.5px; color:var(--muted); font-weight:600}
+.accounts-count strong{color:var(--accent); font-family:var(--font-mono)}
+
+/* ═══════════════════════════════════════════════════════════
+   BULK ACTION BAR
+   ═══════════════════════════════════════════════════════════ */
+.bulk-bar{
+  background:linear-gradient(135deg,rgba(0,229,168,0.15),rgba(59,130,246,0.1));
+  border:1px solid var(--accent); border-radius:var(--radius-md);
+  padding:12px 18px; margin-bottom:14px;
+  display:none; align-items:center; justify-content:space-between;
+  gap:14px; flex-wrap:wrap; animation:slideDown 0.2s ease-out;
+}
+.bulk-bar.show{display:flex}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.bulk-info{font-size:13px; font-weight:700; color:var(--text)}
+.bulk-info strong{color:var(--accent); font-family:var(--font-mono); margin:0 3px}
+.bulk-actions{display:flex; gap:8px; flex-wrap:wrap}
+
+/* ═══════════════════════════════════════════════════════════
+   TABLE
+   ═══════════════════════════════════════════════════════════ */
+.table-wrap{
+  overflow-x:auto; border-radius:var(--radius-md);
+  border:1px solid var(--border); background:var(--card-2);
+}
+table.accounts-table{width:100%; border-collapse:collapse; font-size:12.5px}
+table.accounts-table thead th{
+  background:var(--card-2); padding:13px 14px; text-align:left;
+  font-size:10.5px; font-weight:800; text-transform:uppercase;
+  letter-spacing:1.1px; color:var(--muted);
+  border-bottom:1px solid var(--border); white-space:nowrap;
+  position:sticky; top:0; z-index:3; user-select:none;
+}
+table.accounts-table thead th.sortable{cursor:pointer; transition:color 0.15s}
+table.accounts-table thead th.sortable:hover{color:var(--text)}
+table.accounts-table thead th .sort-icon{
+  display:inline-block; margin-left:5px; opacity:0.3;
+  font-size:9px; transition:opacity 0.15s;
+}
+table.accounts-table thead th.sorted .sort-icon{opacity:1; color:var(--accent)}
+table.accounts-table tbody tr{
+  border-bottom:1px solid var(--border); transition:background 0.1s;
+}
+table.accounts-table tbody tr:hover{background:rgba(0,229,168,0.03)}
+table.accounts-table tbody tr:last-child{border-bottom:none}
+table.accounts-table tbody tr.selected{background:rgba(0,229,168,0.08)}
+table.accounts-table td{padding:11px 14px; vertical-align:middle}
+table.accounts-table td.checkbox-cell{width:44px; text-align:center; padding-left:16px}
+table.accounts-table td.checkbox-cell input{width:16px; height:16px; cursor:pointer; accent-color:var(--accent)}
+
+.nick-cell{max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.nick-name{font-weight:700; color:var(--text); font-size:13px}
+.nick-uid{
+  font-size:11px; color:var(--muted); font-family:var(--font-mono);
+  margin-top:2px; display:block;
+}
+.region-tag{
+  display:inline-block; padding:1px 6px; font-size:9.5px;
+  font-weight:800; border-radius:4px; margin-left:6px;
+  background:rgba(59,130,246,0.2); color:var(--blue);
+  letter-spacing:0.5px; vertical-align:middle;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BADGES
+   ═══════════════════════════════════════════════════════════ */
+.badge{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:5px 10px; font-size:10px; font-weight:800;
+  border-radius:20px; text-transform:uppercase;
+  letter-spacing:0.8px; border:1px solid transparent; white-space:nowrap;
+}
+.badge::before{
+  content:""; width:6px; height:6px; border-radius:50%;
+  background:currentColor; box-shadow:0 0 8px currentColor;
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.badge-online{color:var(--green); background:rgba(34,197,94,0.12); border-color:rgba(34,197,94,0.3)}
+.badge-in_match{color:var(--teal); background:rgba(20,184,166,0.12); border-color:rgba(20,184,166,0.3)}
+.badge-searching{color:var(--blue); background:rgba(59,130,246,0.12); border-color:rgba(59,130,246,0.3)}
+.badge-connecting{color:var(--purple); background:rgba(168,85,247,0.12); border-color:rgba(168,85,247,0.3)}
+.badge-queued{color:var(--orange); background:rgba(245,158,11,0.12); border-color:rgba(245,158,11,0.3)}
+.badge-paused{color:var(--yellow); background:rgba(234,179,8,0.12); border-color:rgba(234,179,8,0.3)}
+.badge-stopped{color:var(--red); background:rgba(239,68,68,0.12); border-color:rgba(239,68,68,0.3)}
+.badge-expired{color:var(--pink); background:rgba(236,72,153,0.12); border-color:rgba(236,72,153,0.3)}
+.badge-offline{color:#64748b; background:rgba(100,116,139,0.12); border-color:rgba(100,116,139,0.3)}
+.badge-cooldown{color:#94a3b8; background:rgba(148,163,184,0.12); border-color:rgba(148,163,184,0.3)}
+.badge-offline::before,.badge-cooldown::before{animation:none}
+
+/* ═══════════════════════════════════════════════════════════
+   LEVEL / EXP DISPLAY
+   ═══════════════════════════════════════════════════════════ */
+.lvl-wrap{display:flex; align-items:center; gap:10px}
+.lvl-badge{
+  min-width:38px; padding:4px 9px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:#050a12; font-weight:800; font-size:11.5px;
+  border-radius:6px; text-align:center; white-space:nowrap;
+  font-family:var(--font-mono); box-shadow:0 2px 8px rgba(0,229,168,0.3);
+}
+.lvl-badge .target{opacity:0.7; font-weight:700; font-size:10px}
+.exp-detail{min-width:120px}
+.exp-bar-wrap{
+  width:120px; height:7px; background:var(--bg-2);
+  border-radius:4px; overflow:hidden;
+  border:1px solid var(--border-2); margin-bottom:4px;
+}
+.exp-bar{
+  height:100%; border-radius:4px;
+  background:linear-gradient(90deg,var(--accent),var(--cyan));
+  transition:width 0.5s ease;
+}
+.exp-text{
+  font-size:10.5px; color:var(--muted);
+  font-family:var(--font-mono); line-height:1.3;
+}
+.exp-text strong{color:var(--text-2); font-weight:700}
+
+/* ═══════════════════════════════════════════════════════════
+   RATE
+   ═══════════════════════════════════════════════════════════ */
+.gain-text{
+  color:var(--accent); font-weight:800; font-size:13px;
+  font-family:var(--font-mono);
+}
+.rate-text{
+  font-size:10px; color:var(--muted);
+  font-family:var(--font-mono); margin-top:2px;
+}
+.rate-text .arrow{color:var(--green); font-weight:700}
+
+/* ═══════════════════════════════════════════════════════════
+   ACTION BUTTONS
+   ═══════════════════════════════════════════════════════════ */
+.action-btns{display:flex; gap:5px; justify-content:center}
+.icon-btn{
+  width:32px; height:32px; display:grid; place-items:center;
+  background:var(--bg-2); border:1px solid var(--border-2);
+  color:var(--muted); border-radius:7px; cursor:pointer;
+  font-size:14px; transition:all 0.15s; padding:0; position:relative;
+}
+.icon-btn:hover{color:var(--text); border-color:#3a5a7c; background:var(--border-2); transform:translateY(-1px)}
+.icon-btn:active{transform:translateY(0)}
+.icon-btn.play:hover{color:var(--green); border-color:var(--green); background:rgba(34,197,94,0.1)}
+.icon-btn.pause:hover{color:var(--yellow); border-color:var(--yellow); background:rgba(234,179,8,0.1)}
+.icon-btn.refresh:hover{color:var(--blue); border-color:var(--blue); background:rgba(59,130,246,0.1)}
+.icon-btn.edit:hover{color:var(--purple); border-color:var(--purple); background:rgba(168,85,247,0.1)}
+.icon-btn.delete:hover{color:var(--red); border-color:var(--red); background:rgba(239,68,68,0.1)}
+
+/* ═══════════════════════════════════════════════════════════
+   EMPTY STATE
+   ═══════════════════════════════════════════════════════════ */
+.empty{text-align:center; padding:80px 20px; color:var(--muted)}
+.empty .icon{font-size:64px; opacity:0.25; margin-bottom:16px}
+.empty h3{font-size:16px; color:var(--text); margin-bottom:8px; font-weight:700}
+.empty p{font-size:13px; line-height:1.6}
+
+/* ═══════════════════════════════════════════════════════════
+   TOAST
+   ═══════════════════════════════════════════════════════════ */
+.toast-container{
+  position:fixed; top:22px; right:22px; z-index:10000;
+  display:flex; flex-direction:column; gap:10px; pointer-events:none;
+}
+.toast{
+  background:var(--card-3); border:1px solid var(--border-2);
+  border-left:4px solid var(--accent); border-radius:var(--radius-md);
+  padding:14px 18px; min-width:280px; max-width:400px;
+  box-shadow:var(--shadow-lg); font-size:13px;
+  animation:slideIn 0.25s ease-out; pointer-events:auto;
+}
+.toast.error{border-left-color:var(--red)}
+.toast.warn{border-left-color:var(--orange)}
+.toast.success{border-left-color:var(--green)}
+.toast .title{font-weight:800; margin-bottom:4px; display:flex; align-items:center; gap:8px}
+.toast .title .icon{font-size:14px}
+.toast .msg{color:var(--muted); font-size:12px; line-height:1.5}
+@keyframes slideIn{from{transform:translateX(110%); opacity:0}to{transform:translateX(0); opacity:1}}
+
+/* ═══════════════════════════════════════════════════════════
+   MODAL
+   ═══════════════════════════════════════════════════════════ */
+.modal-bg{
+  position:fixed; inset:0; background:rgba(0,0,0,0.7);
+  backdrop-filter:blur(6px); z-index:9999;
+  display:none; align-items:center; justify-content:center; padding:20px;
+}
+.modal-bg.show{display:flex}
+.modal{
+  background:var(--card); border:1px solid var(--border-2);
+  border-radius:var(--radius); width:100%; max-width:560px;
+  box-shadow:var(--shadow-lg); animation:modalIn 0.2s ease-out;
+  display:flex; flex-direction:column; max-height:90vh;
+}
+.modal-lg{max-width:820px}
+@keyframes modalIn{from{transform:scale(0.94); opacity:0}to{transform:scale(1); opacity:1}}
+.modal-head{
+  padding:20px 24px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.modal-head h3{font-size:15px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase}
+.modal-close{
+  background:none; border:none; color:var(--muted);
+  font-size:26px; cursor:pointer; line-height:1; padding:0 6px;
+  transition:color 0.15s;
+}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:22px 24px; overflow-y:auto; flex:1}
+.modal-foot{
+  padding:16px 24px; border-top:1px solid var(--border);
+  display:flex; gap:10px; justify-content:flex-end;
+}
+.modal .field:last-child{margin-bottom:0}
+.modal-info{
+  background:var(--bg-2); border-radius:var(--radius-sm);
+  padding:14px 16px; margin-bottom:18px;
+  font-size:12px; color:var(--muted); line-height:1.7;
+}
+.modal-info strong{color:var(--text)}
+
+/* ═══════════════════════════════════════════════════════════
+   QUEUE DRAWER
+   ═══════════════════════════════════════════════════════════ */
+.queue-chip-list{display:flex; flex-wrap:wrap; gap:8px}
+.queue-chip{
+  background:var(--bg-2); border:1px solid var(--border-2);
+  border-radius:20px; padding:5px 12px; font-size:11px;
+  font-family:var(--font-mono); color:var(--orange); font-weight:600;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INFO GRID
+   ═══════════════════════════════════════════════════════════ */
+.info-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:8px 16px;
+  font-size:12px; color:var(--muted);
+  margin-top:16px; padding-top:16px; border-top:1px solid var(--border);
+}
+.info-grid > div{display:flex; justify-content:space-between; align-items:center}
+.info-grid .val{color:var(--text); font-family:var(--font-mono); font-weight:700}
+
+/* ═══════════════════════════════════════════════════════════
+   SWITCH
+   ═══════════════════════════════════════════════════════════ */
+.switch{
+  position:relative; width:38px; height:20px;
+  background:var(--bg-2); border-radius:10px;
+  border:1px solid var(--border-2); cursor:pointer;
+  transition:background 0.2s; flex-shrink:0;
+}
+.switch::after{
+  content:""; position:absolute; top:2px; left:2px;
+  width:14px; height:14px; background:var(--muted);
+  border-radius:50%; transition:all 0.2s;
+}
+.switch.on{background:var(--accent-dim); border-color:var(--accent)}
+.switch.on::after{left:20px; background:var(--accent); box-shadow:0 0 8px var(--accent)}
+
+/* ═══════════════════════════════════════════════════════════
+   LOADING
+   ═══════════════════════════════════════════════════════════ */
+.loading-overlay{
+  position:fixed; inset:0; background:rgba(8,11,20,0.88);
+  backdrop-filter:blur(6px); z-index:10001;
+  display:none; align-items:center; justify-content:center;
+  flex-direction:column; gap:18px;
+}
+.loading-overlay.show{display:flex}
+.spinner{
+  width:52px; height:52px;
+  border:3px solid var(--border-2);
+  border-top-color:var(--accent); border-radius:50%;
+  animation:spin 0.8s linear infinite;
+  box-shadow:0 0 24px rgba(0,229,168,0.3);
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:13px; color:var(--muted); letter-spacing:0.8px; font-weight:600}
+
+/* utility */
+.text-right{text-align:right}
+.text-center{text-align:center}
+.muted{color:var(--muted)}
+.mono{font-family:var(--font-mono)}
+.hidden{display:none!important}
+
+/* mobile */
+@media(max-width:700px){
+  .app{padding:14px 14px 80px}
+  .header{padding:18px}
+  .brand-text h1{font-size:17px}
+  .brand-logo{width:44px; height:44px; font-size:18px}
+  .header-stats{gap:18px}
+  .hstat .v{font-size:20px}
+  .card{padding:18px}
+  .pool-counter .active{font-size:34px}
+}
 </style>
 </head>
 <body>
 
-<!-- TOP BAR -->
-<div class="topbar">
-  <div class="logo">⚡ MAHIR LEVEL PRO</div>
-  <div class="topbar-right">
-    <span class="uptime" id="uptimeEl">⏱ 00:00:00</span>
-    <button class="btn btn-ghost" onclick="openModal('addModal')">＋ Add Account</button>
-    <button class="btn btn-primary" onclick="openModal('uploadModal')">📂 Upload JSON</button>
-  </div>
+<div class="toast-container" id="toasts"></div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">Processing...</div>
 </div>
 
-<!-- STAT CARDS -->
-<div class="stat-row">
-  <div class="stat-card"><div class="stat-val c-cyan" id="s-total">0</div><div class="stat-lbl">Total Accounts</div></div>
-  <div class="stat-card"><div class="stat-val c-green" id="s-running">0</div><div class="stat-lbl">Running</div></div>
-  <div class="stat-card"><div class="stat-val c-orange" id="s-queued">0</div><div class="stat-lbl">Queued</div></div>
-  <div class="stat-card"><div class="stat-val c-purple" id="s-matches">0</div><div class="stat-lbl">Total Matches</div></div>
-  <div class="stat-card"><div class="stat-val c-yellow" id="s-exp">0</div><div class="stat-lbl">Total EXP Gained</div></div>
-  <div class="stat-card"><div class="stat-val c-cyan" id="s-slot">∞</div><div class="stat-lbl">Online Slot</div></div>
-</div>
+<div class="app">
 
-<!-- TOOLBAR -->
-<div class="toolbar" style="margin-top:16px">
-  <button class="btn btn-success" onclick="api('/api/system/start-all','POST',{})">▶ Start All</button>
-  <button class="btn btn-warn" onclick="api('/api/system/pause-all','POST',{})">⏸ Pause All</button>
-  <button class="btn btn-ghost" onclick="api('/api/system/refresh','POST',{})">🔄 Refresh All</button>
-  <button class="btn btn-ghost" onclick="downloadAccounts()">⬇ Download</button>
-  <button class="btn btn-danger" onclick="confirmDeleteAll()">🗑 Delete All</button>
-</div>
-
-<!-- ONE-SHOT POOL CONFIG -->
-<div class="pool-bar">
-  <span style="font-size:.78rem;color:var(--text2);font-weight:700;margin-right:4px">⚡ One-Shot Pool:</span>
-  <label>Online Limit
-    <input type="number" id="poolOnlineLimit" min="0" max="9999" placeholder="0=∞" style="margin-left:6px" value="0">
-  </label>
-  <label>Level Limit
-    <input type="number" id="poolLvlLimit" min="0" max="100" placeholder="0=off" style="margin-left:6px" value="0">
-  </label>
-  <button class="btn btn-purple" onclick="applyPoolConfig()">Apply</button>
-  <span class="pool-status" id="poolStatus">Active: 0 | Queued: 0</span>
-</div>
-
-<!-- SEARCH -->
-<div class="search-row">
-  <input class="search-box" type="text" id="searchBox" placeholder="🔍  Search by UID, nickname…" oninput="renderTable()">
-  <select class="filter-sel" id="filterStatus" onchange="renderTable()">
-    <option value="">All Status</option>
-    <option value="ONLINE">Online</option>
-    <option value="IN_MATCH">In Match</option>
-    <option value="SEARCHING">Searching</option>
-    <option value="CONNECTING">Connecting</option>
-    <option value="QUEUED">Queued</option>
-    <option value="PAUSED">Paused</option>
-    <option value="STOPPED">Stopped</option>
-    <option value="EXPIRED">Expired</option>
-  </select>
-</div>
-
-<div class="section-title" id="tableTitle">Accounts (0)</div>
-
-<!-- TABLE -->
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>UID</th>
-        <th>Nickname</th>
-        <th>Status</th>
-        <th>Level</th>
-        <th>EXP Gained</th>
-        <th>Daily EXP</th>
-        <th>Matches</th>
-        <th>Region</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="tableBody"></tbody>
-  </table>
-  <div class="empty" id="emptyState" style="display:none">
-    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-    <p>No accounts found.<br>Upload a JSON file or add accounts manually.</p>
-  </div>
-</div>
-
-<!-- ══════════════ MODALS ══════════════ -->
-
-<!-- ADD ACCOUNT MODAL -->
-<div class="modal-bg" id="addModal">
-  <div class="modal">
-    <button class="close-x" onclick="closeModal('addModal')">✕</button>
-    <h2>➕ Add Account</h2>
-    <label>UID</label>
-    <input id="addUid" placeholder="e.g. 8447914704">
-    <label>Password</label>
-    <input id="addPw" type="password" placeholder="e.g. MAHIR_XYZ">
-    <div style="text-align:center;color:var(--text3);margin:12px 0;font-size:.8rem">— OR —</div>
-    <label>JWT Token</label>
-    <input id="addToken" placeholder="Paste token here">
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('addModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="addAccount()">Add & Start</button>
-    </div>
-  </div>
-</div>
-
-<!-- UPLOAD JSON MODAL -->
-<div class="modal-bg" id="uploadModal">
-  <div class="modal">
-    <button class="close-x" onclick="closeModal('uploadModal')">✕</button>
-    <h2>📂 Upload Account JSON</h2>
-    <div class="upload-zone" id="dropZone" onclick="document.getElementById('jsonFileInput').click()"
-         ondragover="event.preventDefault();this.classList.add('drag')"
-         ondragleave="this.classList.remove('drag')"
-         ondrop="handleDrop(event)">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      <p>Drag & drop or click to select<br><small style="color:var(--text3)">MAHIR_ID_GEN_NSOMAF.json or standard accounts.json</small></p>
-      <input type="file" id="jsonFileInput" accept=".json" onchange="handleFileSelect(event)">
-    </div>
-    <div id="uploadPreview" style="display:none">
-      <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:12px;font-size:.8rem;color:var(--text2)">
-        <span id="uploadFilename" style="color:var(--accent);font-weight:700"></span><br>
-        <span id="uploadCount"></span>
+  <!-- ═══════════════ HEADER ═══════════════ -->
+  <div class="header">
+    <div class="brand">
+      <div class="brand-logo">M</div>
+      <div class="brand-text">
+        <h1>MAHIR LEVEL <span>PRO</span></h1>
+        <p>Auto Level-Up Engine · BD Server</p>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('uploadModal');resetUpload()">Cancel</button>
-      <button class="btn btn-primary" id="uploadSubmitBtn" onclick="submitUpload()" disabled>Upload & Start</button>
+    <div class="header-stats">
+      <div class="hstat"><div class="v" id="statTotal">0</div><div class="l">Accounts</div></div>
+      <div class="hstat"><div class="v blue" id="statActive">0</div><div class="l">Active</div></div>
+      <div class="hstat"><div class="v orange" id="statQueued">0</div><div class="l">Queued</div></div>
+      <div class="hstat"><div class="v purple" id="statLimit">∞</div><div class="l">Limit</div></div>
+      <div class="hstat"><div class="v pink" id="statGained">0</div><div class="l">Total EXP</div></div>
+      <div class="hstat"><div class="v accent" id="statUptime">0s</div><div class="l">Uptime</div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ ROW 1: POOL CONFIG + SYSTEM ═══════════════ -->
+  <div class="grid-2">
+
+    <!-- One-Shot Pool -->
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>One-Shot Pool · Concurrent Control</div>
+
+      <div class="pool-visual">
+        <div class="pool-counter">
+          <span class="active" id="poolActive">0</span>
+          <span class="divider">/</span>
+          <span class="total" id="poolTotal">∞</span>
+        </div>
+        <div class="slot-bar"><div class="slot-fill" id="slotFill" style="width:0%"></div></div>
+        <div class="pool-labels">
+          <span class="active-lbl">● Active Bots</span>
+          <span class="queued">◐ <span id="poolQueued">0</span> In Queue</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>🟢 Concurrent Online Limit (0 = Unlimited)</label>
+        <div class="input-row">
+          <input type="number" id="inputOnlineLimit" min="0" placeholder="e.g. 10">
+          <button class="btn btn-primary" onclick="applyPoolConfig()">Apply</button>
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:8px">
+        <label>🎯 Auto-Replace Level Limit (0 = Disabled)</label>
+        <div class="input-row">
+          <input type="number" id="inputLvlLimit" min="0" max="100" placeholder="e.g. 3">
+          <button class="btn btn-primary" onclick="applyPoolConfig()">Apply</button>
+        </div>
+      </div>
+      <div class="muted" style="font-size:11.5px; line-height:1.6">
+        When a bot reaches this level, it stops automatically and the next queued account launches in its place.
+      </div>
+    </div>
+
+    <!-- System Actions -->
+    <div class="card">
+      <div class="card-title"><span class="dot blue"></span>System Actions</div>
+
+      <div class="btn-row">
+        <button class="btn btn-blue" onclick="startAll()">▶ Start All</button>
+        <button class="btn btn-orange" onclick="pauseAll()">⏸ Pause All</button>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-purple" onclick="refreshAll()">⟳ Refresh All</button>
+        <button class="btn btn-red" onclick="deleteAllConfirm()">🗑 Delete All</button>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost btn-full" onclick="downloadAccounts()">💾 Export Accounts (JSON)</button>
+      </div>
+
+      <div class="info-grid">
+        <div><span>Matches</span><span class="val" id="statMatches">0</span></div>
+        <div><span>Paused</span><span class="val" id="statPaused">0</span></div>
+        <div><span>Auto-refresh</span>
+          <div class="switch on" id="autoRefreshSwitch" onclick="toggleAutoRefresh()"></div>
+        </div>
+        <div><span>Queue view</span>
+          <button class="btn btn-sm btn-ghost" onclick="showQueueDrawer()">View</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════ ROW 2: ADD + UPLOAD ═══════════════ -->
+  <div class="grid-2">
+
+    <!-- Add single -->
+    <div class="card">
+      <div class="card-title"><span class="dot purple"></span>Add Single Account</div>
+      <div class="field">
+        <label>UID</label>
+        <input type="text" id="addUid" placeholder="Enter UID (e.g. 1234567890)">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="addPass" placeholder="Enter password">
+      </div>
+      <div class="field">
+        <label>Access Token <span class="muted" style="text-transform:none; letter-spacing:0; font-weight:400">(optional — leave blank if using password)</span></label>
+        <input type="text" id="addToken" placeholder="JWT access token">
+      </div>
+      <button class="btn btn-primary btn-full" onclick="addSingle()">＋ Add &amp; Launch</button>
+    </div>
+
+    <!-- Bulk upload -->
+    <div class="card">
+      <div class="card-title"><span class="dot orange"></span>Bulk Upload · JSON</div>
+
+      <div class="dropzone" id="dropzone">
+        <div class="icon">📁</div>
+        <div class="title">Click or drop your JSON file here</div>
+        <div class="hint">Supports <b>MAHIR_ID_GEN_*.json</b> · arrays · {"accounts":[...]} · single object</div>
+        <div class="file-name" id="dropFileName"></div>
+      </div>
+      <input type="file" id="fileInput" accept=".json,application/json" style="display:none">
+
+      <div style="margin-top:16px">
+        <div class="field" style="margin-bottom:10px">
+          <label>Or paste JSON directly</label>
+          <textarea id="jsonPaste" placeholder='[{"uid":"123456","password":"abc123"}]' rows="4"></textarea>
+        </div>
+        <button class="btn btn-orange btn-full" onclick="uploadJsonText()">🚀 Upload from Text</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════ ACCOUNT MANAGER ═══════════════ -->
+  <div class="card">
+    <div class="accounts-toolbar">
+      <div class="toolbar-left">
+        <div class="card-title" style="margin:0">
+          <span class="dot"></span>Accounts
+          <span class="accounts-count" id="accountsCount">—</span>
+        </div>
+      </div>
+      <div class="toolbar-left" style="flex:1; justify-content:flex-end">
+        <div class="filters" id="filters">
+          <button class="filter-chip active" data-filter="all">All<span class="cnt" data-cnt="all">0</span></button>
+          <button class="filter-chip" data-filter="online">Online<span class="cnt" data-cnt="online">0</span></button>
+          <button class="filter-chip" data-filter="in_match">In Match<span class="cnt" data-cnt="in_match">0</span></button>
+          <button class="filter-chip" data-filter="queued">Queued<span class="cnt" data-cnt="queued">0</span></button>
+          <button class="filter-chip" data-filter="paused">Paused<span class="cnt" data-cnt="paused">0</span></button>
+          <button class="filter-chip" data-filter="stopped">Stopped<span class="cnt" data-cnt="stopped">0</span></button>
+          <button class="filter-chip" data-filter="expired">Expired<span class="cnt" data-cnt="expired">0</span></button>
+        </div>
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Search UID, nickname...">
+        </div>
+      </div>
+    </div>
+
+    <!-- Bulk action bar -->
+    <div class="bulk-bar" id="bulkBar">
+      <div class="bulk-info"><strong id="bulkCount">0</strong> accounts selected</div>
+      <div class="bulk-actions">
+        <button class="btn btn-sm btn-blue" onclick="bulkStart()">▶ Start</button>
+        <button class="btn btn-sm btn-orange" onclick="bulkPause()">⏸ Pause</button>
+        <button class="btn btn-sm btn-purple" onclick="bulkEditLimits()">⚙ Set Limits</button>
+        <button class="btn btn-sm btn-red" onclick="bulkDeleteConfirm()">🗑 Delete</button>
+        <button class="btn btn-sm btn-ghost" onclick="clearSelection()">✕ Clear</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="accounts-table" id="accountsTable">
+        <thead>
+          <tr>
+            <th class="checkbox-cell"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+            <th>Account</th>
+            <th>Status</th>
+            <th>Level / EXP</th>
+            <th class="sortable text-right" data-sort="gained">Gained <span class="sort-icon">▼</span></th>
+            <th class="sortable text-right" data-sort="matches">Matches <span class="sort-icon">▼</span></th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="accountsBody">
+          <tr><td colspan="7">
+            <div class="empty">
+              <div class="icon">📭</div>
+              <h3>No accounts loaded</h3>
+              <p>Add a single account or upload a JSON file to begin.</p>
+            </div>
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════ EDIT LIMITS MODAL ═══════════════ -->
+<div class="modal-bg" id="editModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="editModalTitle">Edit Limits</h3>
+      <button class="modal-close" onclick="closeModal('editModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-info" id="editModalInfo"></div>
+      <div class="field">
+        <label>🎯 Level Limit (blank = no limit)</label>
+        <input type="number" id="editLevelLimit" min="1" max="100" placeholder="e.g. 3">
+      </div>
+      <div class="field">
+        <label>⚡ Daily EXP Limit</label>
+        <input type="number" id="editExpLimit" min="1" placeholder="e.g. 50000">
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('editModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditLimits()">Save Changes</button>
     </div>
   </div>
 </div>
 
-<!-- LOG MODAL -->
-<div class="modal-bg" id="logModal">
-  <div class="modal" style="max-width:640px">
-    <button class="close-x" onclick="closeModal('logModal')">✕</button>
-    <h2>📋 Logs — <span id="logModalUid"></span></h2>
-    <div class="log-box" id="logContent">Loading…</div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('logModal')">Close</button>
-      <button class="btn btn-ghost" onclick="refreshLog()">🔄 Refresh</button>
+<!-- ═══════════════ CONFIRM MODAL ═══════════════ -->
+<div class="modal-bg" id="confirmModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="confirmTitle">Confirm</h3>
+      <button class="modal-close" onclick="closeModal('confirmModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:14px; line-height:1.7" id="confirmBody"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('confirmModal')">Cancel</button>
+      <button class="btn btn-red" id="confirmYesBtn">Confirm</button>
     </div>
   </div>
 </div>
 
-<!-- CONFIRM DELETE MODAL -->
-<div class="modal-bg" id="delModal">
-  <div class="modal" style="max-width:380px">
-    <h2 style="color:var(--red)">⚠ Delete All Accounts?</h2>
-    <p style="margin-top:12px;color:var(--text2);font-size:.88rem">This will stop all bots and remove every account permanently. Type <strong style="color:var(--red)">DELETE</strong> to confirm.</p>
-    <label style="margin-top:14px">Confirmation</label>
-    <input id="delConfirmInput" placeholder="Type DELETE" oninput="document.getElementById('delConfirmBtn').disabled=this.value!=='DELETE'">
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('delModal')">Cancel</button>
-      <button class="btn btn-danger" id="delConfirmBtn" disabled onclick="doDeleteAll()">Delete All</button>
+<!-- ═══════════════ QUEUE DRAWER MODAL ═══════════════ -->
+<div class="modal-bg" id="queueModal">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h3>Queue · <span id="queueCount">0</span> waiting</h3>
+      <button class="modal-close" onclick="closeModal('queueModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="queueList" class="queue-chip-list"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary" onclick="closeModal('queueModal')">Close</button>
     </div>
   </div>
 </div>
-
-<!-- TOAST -->
-<div id="toast"></div>
 
 <script>
-// ═══════════════════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════════════════
-let allAccounts = [];
-let currentLogUid = null;
-let startTime = Date.now();
-let uploadedData = null;
-let poolOnline = 0, poolLvl = 0;
+/* ════════════════════════════════════════════════════════════
+   ENDPOINTS (exact match to main.py)
+   ════════════════════════════════════════════════════════════ */
+const API = {
+  stats:        '/api/stats',
+  add:          '/api/account/add',
+  bulkAdd:      '/api/accounts/bulk-add',
+  del:          '/api/account/delete',
+  pause:        '/api/account/pause',
+  start:        '/api/account/start',
+  refresh:      '/api/account/refresh',
+  limit:        '/api/account/limit',
+  expLimit:     '/api/account/exp-limit',
+  startAll:     '/api/system/start-all',
+  pauseAll:     '/api/system/pause-all',
+  refreshAll:   '/api/system/refresh',
+  deleteAll:    '/api/system/delete-all',
+  download:     '/api/accounts/download',
+  uploadJson:   '/api/accounts/upload-json',
+  poolConfig:   '/api/system/pool-config',
+  poolQueue:    '/api/system/pool-queue',
+};
 
-// ═══════════════════════════════════════════════════
-//  UTILS
-// ═══════════════════════════════════════════════════
-function toast(msg, type='info') {
+const LEVEL_THRESHOLDS = [
+  0,48,202,544,1012,1844,2792,3800,4870,6004,7192,8448,9760,11140,12566,14060,
+  15610,17224,18902,20632,22424,24278,26192,28166,30200,32294,34448,37804,41274,
+  44870,48582,53394,58566,64096,69994,76260,83506,91128,99322,108092,120144,
+  133266,147472,162760,179126,196572,215368,235316,257010,279860,304056,348318,
+  394982,444044,495508,549364,633756,721744,813336,908522,1041438,1180352,1325266,
+];
+
+/* ════════════════════════════════════════════════════════════
+   STATE
+   ════════════════════════════════════════════════════════════ */
+let CURRENT_ACCOUNTS = [];
+let CURRENT_QUEUE = [];
+let QUEUE_SET = new Set();
+let ACTIVE_FILTER = 'all';
+let SEARCH_TERM = '';
+let AUTO_REFRESH = true;
+let REFRESH_TIMER = null;
+let UPTIME_TICK_TIMER = null;
+let UPTIME_SECONDS = 0;
+let SORT_KEY = 'gained';
+let SORT_DIR = 'desc';
+let SELECTED = new Set();
+let EDIT_TARGET_UID = null;
+
+/* ════════════════════════════════════════════════════════════
+   UTILS
+   ════════════════════════════════════════════════════════════ */
+const fmtNum = n => {
+  if (n === null || n === undefined || n === '') return '0';
+  n = Number(n);
+  return isNaN(n) ? '0' : n.toLocaleString('en-US');
+};
+const fmtUptime = s => {
+  s = Math.floor(s || 0);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  if (h) return `${h}h ${m}m`;
+  if (m) return `${m}m ${sec}s`;
+  return `${sec}s`;
+};
+const escapeHtml = s => {
+  if (s === null || s === undefined) return '';
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+};
+
+function toast(title, msg, type = 'info', dur = 4200) {
+  const c = document.getElementById('toasts');
   const el = document.createElement('div');
-  el.className = `toast-item toast-${type}`;
-  el.textContent = msg;
-  document.getElementById('toast').appendChild(el);
-  setTimeout(()=>el.remove(), 3800);
+  el.className = 'toast ' + (type === 'error' ? 'error' : type === 'warn' ? 'warn' : type === 'success' ? 'success' : '');
+  const icon = type === 'error' ? '✕' : type === 'warn' ? '⚠' : type === 'success' ? '✓' : 'ℹ';
+  el.innerHTML = `<div class="title"><span class="icon">${icon}</span>${escapeHtml(title)}</div>${msg ? `<div class="msg">${escapeHtml(msg)}</div>` : ''}`;
+  c.appendChild(el);
+  setTimeout(() => {
+    el.style.transition = 'opacity 0.3s, transform 0.3s';
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(110%)';
+    setTimeout(() => el.remove(), 300);
+  }, dur);
 }
 
-function fmt(n) {
-  if (n >= 1e6) return (n/1e6).toFixed(1)+'M';
-  if (n >= 1e3) return (n/1e3).toFixed(1)+'K';
-  return String(n);
+function showLoading(text = 'Processing...') {
+  document.getElementById('loadingText').textContent = text;
+  document.getElementById('loadingOverlay').classList.add('show');
 }
+const hideLoading = () => document.getElementById('loadingOverlay').classList.remove('show');
 
-function fmtUptime(s) {
-  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
-  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-}
-
-async function api(url, method='GET', body=null, silent=false) {
+async function apiFetch(url, opts = {}) {
   try {
-    const opts = { method, headers:{'Content-Type':'application/json'} };
-    if (body !== null) opts.body = JSON.stringify(body);
-    const r = await fetch(url, opts);
-    const d = await r.json();
-    if (!silent) {
-      if (d.status === 'ok' || d.status === 'success') toast(d.message || '✓ Done', 'ok');
-      else if (d.status === 'error') toast(d.error || 'Error', 'err');
-    }
-    return d;
-  } catch(e) {
-    if (!silent) toast('Request failed: '+e.message, 'err');
-    return null;
+    const r = await fetch(url, {
+      headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+      ...opts,
+    });
+    let j = null;
+    try { j = await r.json(); } catch { j = { status: 'error', error: 'Invalid JSON response' }; }
+    if (!r.ok && j && !j.status) j.status = 'error';
+    return { ok: r.ok, status: r.status, data: j };
+  } catch (e) {
+    return { ok: false, status: 0, data: { status: 'error', error: String(e) } };
   }
 }
 
-// ═══════════════════════════════════════════════════
-//  MODALS
-// ═══════════════════════════════════════════════════
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-document.querySelectorAll('.modal-bg').forEach(bg => {
-  bg.addEventListener('click', e => { if(e.target === bg) bg.classList.remove('open'); });
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.modal-bg').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('show'); });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-bg.show').forEach(m => m.classList.remove('show'));
 });
 
-// ═══════════════════════════════════════════════════
-//  POOL CONFIG
-// ═══════════════════════════════════════════════════
-async function loadPoolConfig() {
-  const d = await api('/api/system/pool-config','GET',null,true);
-  if (!d) return;
-  poolOnline = d.online_slot_limit || 0;
-  poolLvl = d.lvl_limit || 0;
-  document.getElementById('poolOnlineLimit').value = poolOnline;
-  document.getElementById('poolLvlLimit').value = poolLvl;
-  document.getElementById('poolStatus').textContent =
-    `Active: ${d.active_bots} | Queued: ${d.queued_bots}`;
-  document.getElementById('s-slot').textContent = poolOnline > 0 ? poolOnline : '∞';
-}
-
-async function applyPoolConfig() {
-  const ol = parseInt(document.getElementById('poolOnlineLimit').value) || 0;
-  const ll = parseInt(document.getElementById('poolLvlLimit').value) || 0;
-  const d = await api('/api/system/pool-config','POST',{online_limit:ol, lvl_limit:ll});
-  if (d && d.status === 'ok') {
-    poolOnline = ol; poolLvl = ll;
-    document.getElementById('s-slot').textContent = ol > 0 ? ol : '∞';
-    document.getElementById('poolStatus').textContent =
-      `Active: ${d.active_bots} | Queued: ${d.queued_bots}`;
-    toast(`Pool: ${ol||'∞'} online, Lvl limit: ${ll||'off'}`, 'ok');
-  }
-}
-
-// ═══════════════════════════════════════════════════
-//  ADD ACCOUNT
-// ═══════════════════════════════════════════════════
-async function addAccount() {
-  const uid = document.getElementById('addUid').value.trim();
-  const pw  = document.getElementById('addPw').value.trim();
-  const tok = document.getElementById('addToken').value.trim();
-  if (!uid && !tok) { toast('Enter UID+Password or Token', 'err'); return; }
-  const body = uid && pw ? {uid, password:pw} : {token:tok};
-  const d = await api('/api/account/add','POST', body);
-  if (d?.status === 'ok') {
-    closeModal('addModal');
-    document.getElementById('addUid').value='';
-    document.getElementById('addPw').value='';
-    document.getElementById('addToken').value='';
-  }
-}
-
-// ═══════════════════════════════════════════════════
-//  UPLOAD JSON
-// ═══════════════════════════════════════════════════
-function handleFileSelect(e) { processFile(e.target.files[0]); }
-function handleDrop(e) {
-  e.preventDefault();
-  document.getElementById('dropZone').classList.remove('drag');
-  processFile(e.dataTransfer.files[0]);
-}
-
-function processFile(file) {
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      let data = JSON.parse(ev.target.result);
-      let rows = Array.isArray(data) ? data : (data.accounts || []);
-      uploadedData = data;
-      document.getElementById('uploadFilename').textContent = file.name;
-      document.getElementById('uploadCount').textContent = `${rows.length} accounts found`;
-      document.getElementById('uploadPreview').style.display = 'block';
-      document.getElementById('uploadSubmitBtn').disabled = false;
-    } catch(err) {
-      toast('Invalid JSON file', 'err');
-    }
-  };
-  reader.readAsText(file);
-}
-
-function resetUpload() {
-  uploadedData = null;
-  document.getElementById('uploadPreview').style.display='none';
-  document.getElementById('uploadSubmitBtn').disabled=true;
-  document.getElementById('jsonFileInput').value='';
-}
-
-async function submitUpload() {
-  if (!uploadedData) return;
-  const btn = document.getElementById('uploadSubmitBtn');
-  btn.disabled = true; btn.textContent = 'Uploading…';
+/* ════════════════════════════════════════════════════════════
+   DATA LOADING
+   ════════════════════════════════════════════════════════════ */
+async function loadAll() {
   try {
-    const r = await fetch('/api/accounts/upload-json', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(uploadedData)
-    });
-    const d = await r.json();
-    if (d.status === 'ok') {
-      toast(`✓ Added: ${d.added}, Skipped: ${d.skipped} of ${d.total_in_file}`, 'ok');
-      closeModal('uploadModal');
-      resetUpload();
+    const [statsRes, poolRes, queueRes] = await Promise.all([
+      apiFetch(API.stats),
+      apiFetch(API.poolConfig),
+      apiFetch(API.poolQueue),
+    ]);
+
+    if (statsRes.ok && statsRes.data && Array.isArray(statsRes.data.accounts)) {
+      CURRENT_ACCOUNTS = statsRes.data.accounts;
+      renderHeader(statsRes.data);
+    }
+
+    if (poolRes.ok && poolRes.data) {
+      renderPool(poolRes.data);
+      const oi = document.getElementById('inputOnlineLimit');
+      const ll = document.getElementById('inputLvlLimit');
+      if (oi && document.activeElement !== oi) oi.value = poolRes.data.online_slot_limit ?? 0;
+      if (ll && document.activeElement !== ll) ll.value = poolRes.data.lvl_limit ?? 0;
+    }
+
+    if (queueRes.ok && queueRes.data && Array.isArray(queueRes.data.queue)) {
+      CURRENT_QUEUE = queueRes.data.queue.map(String);
+      QUEUE_SET = new Set(CURRENT_QUEUE);
     } else {
-      toast(d.error || 'Upload failed', 'err');
+      CURRENT_QUEUE = [];
+      QUEUE_SET = new Set();
     }
-  } catch(e) {
-    toast('Upload error: '+e.message, 'err');
-  }
-  btn.disabled = false; btn.textContent = 'Upload & Start';
-}
 
-// ═══════════════════════════════════════════════════
-//  DELETE ALL
-// ═══════════════════════════════════════════════════
-function confirmDeleteAll() {
-  document.getElementById('delConfirmInput').value='';
-  document.getElementById('delConfirmBtn').disabled=true;
-  openModal('delModal');
-}
-
-async function doDeleteAll() {
-  const d = await api('/api/system/delete-all','POST',{confirm:'DELETE'});
-  if (d?.status === 'ok') {
-    closeModal('delModal');
-    toast(`Deleted ${d.count} accounts`, 'ok');
-    allAccounts = [];
-    renderTable();
-    // reset pool queue display
-    document.getElementById('poolStatus').textContent = 'Active: 0 | Queued: 0';
+    renderFilterCounts();
+    renderAccountsTable();
+  } catch (e) {
+    console.error('loadAll error:', e);
   }
 }
 
-// ═══════════════════════════════════════════════════
-//  DOWNLOAD
-// ═══════════════════════════════════════════════════
-function downloadAccounts() {
-  window.location.href = '/api/accounts/download';
+function renderHeader(data) {
+  document.getElementById('statTotal').textContent   = fmtNum(data.total_accounts);
+  document.getElementById('statActive').textContent  = fmtNum(data.running_accounts);
+  document.getElementById('statGained').textContent  = fmtNum(data.total_gained_exp);
+  document.getElementById('statMatches').textContent = fmtNum(data.total_matches);
+  document.getElementById('statPaused').textContent  = fmtNum(data.paused_accounts);
+  UPTIME_SECONDS = Number(data.uptime) || 0;
+  document.getElementById('statUptime').textContent = fmtUptime(UPTIME_SECONDS);
 }
 
-// ═══════════════════════════════════════════════════
-//  ROW ACTIONS
-// ═══════════════════════════════════════════════════
-async function startAcc(uid) { await api('/api/account/start','POST',{uid}); }
-async function pauseAcc(uid) { await api('/api/account/pause','POST',{uid}); }
-async function deleteAcc(uid) {
-  if (!confirm(`Delete account ${uid}?`)) return;
-  const d = await api('/api/account/delete','POST',{uid});
-  if (d?.status === 'ok') {
-    allAccounts = allAccounts.filter(a=>a.uid!==uid && a.display_uid!==uid);
-    renderTable();
+function renderPool(pool) {
+  const active = Number(pool.active_bots) || 0;
+  const limit = Number(pool.online_slot_limit) || 0;
+  const queued = Number(pool.queued_bots) || 0;
+
+  const activeEl = document.getElementById('poolActive');
+  if (activeEl.textContent !== String(active)) {
+    activeEl.classList.remove('bump');
+    void activeEl.offsetWidth;
+    activeEl.classList.add('bump');
+  }
+  activeEl.textContent = fmtNum(active);
+
+  const totalEl = document.getElementById('poolTotal');
+  totalEl.textContent = limit > 0 ? fmtNum(limit) : '∞';
+  totalEl.classList.toggle('infinite', limit <= 0);
+
+  document.getElementById('poolQueued').textContent = fmtNum(queued);
+  document.getElementById('statQueued').textContent  = fmtNum(queued);
+  document.getElementById('statLimit').textContent   = limit > 0 ? fmtNum(limit) : '∞';
+
+  const fill = document.getElementById('slotFill');
+  let pct = 0;
+  if (limit > 0) pct = Math.min(100, (active / limit) * 100);
+  else pct = active > 0 ? 100 : 0;
+  fill.style.width = pct + '%';
+  fill.classList.remove('medium', 'full');
+  if (limit > 0) {
+    if (active >= limit) fill.classList.add('full');
+    else if (active >= Math.ceil(limit * 0.75)) fill.classList.add('medium');
   }
 }
 
-async function showLog(uid) {
-  currentLogUid = uid;
-  document.getElementById('logModalUid').textContent = uid;
-  document.getElementById('logContent').textContent = 'Loading…';
-  openModal('logModal');
-  refreshLog();
-}
-
-async function refreshLog() {
-  if (!currentLogUid) return;
-  try {
-    const r = await fetch(`/api/account/logs?uid=${encodeURIComponent(currentLogUid)}`);
-    const d = await r.json();
-    const lines = d.logs || [];
-    document.getElementById('logContent').textContent = lines.length ? lines.join('\n') : '(no logs yet)';
-    const lb = document.getElementById('logContent');
-    lb.scrollTop = lb.scrollHeight;
-  } catch(e) {
-    document.getElementById('logContent').textContent = 'Failed to load logs';
+function getEffectiveStatus(acc) {
+  const raw = String(acc.status || 'OFFLINE').toUpperCase();
+  if (['PAUSED', 'STOPPED', 'EXPIRED'].includes(raw)) return raw;
+  if (QUEUE_SET.has(String(acc.auth_uid)) &&
+      !['ONLINE','IN_MATCH','SEARCHING'].includes(raw)) {
+    return 'QUEUED';
   }
+  return raw;
 }
 
-// ═══════════════════════════════════════════════════
-//  STATUS BADGE
-// ═══════════════════════════════════════════════════
-function badgeClass(s) {
-  const m = {
-    ONLINE:'badge-online', IN_MATCH:'badge-match', SEARCHING:'badge-search',
-    CONNECTING:'badge-connecting', PAUSED:'badge-paused', STOPPED:'badge-stopped',
-    EXPIRED:'badge-expired', QUEUED:'badge-queued', COOLDOWN:'badge-cooldown'
-  };
-  return 'badge '+(m[s]||'badge-paused');
+/* ════════════════════════════════════════════════════════════
+   RENDER TABLE
+   ════════════════════════════════════════════════════════════ */
+function statusClass(s) {
+  return 'badge-' + s.toLowerCase().replace(/[^a-z_]/g, '');
 }
 
-// ═══════════════════════════════════════════════════
-//  RENDER TABLE
-// ═══════════════════════════════════════════════════
-function renderTable() {
-  const q = document.getElementById('searchBox').value.toLowerCase();
-  const f = document.getElementById('filterStatus').value;
+function expProgress(acc) {
+  const exp = Number(acc.current_exp) || 0;
+  const lvl = Number(acc.level) || 1;
+  if (lvl - 1 < LEVEL_THRESHOLDS.length && lvl < LEVEL_THRESHOLDS.length) {
+    const start = LEVEL_THRESHOLDS[lvl - 1] || 0;
+    const end = LEVEL_THRESHOLDS[lvl] || (start + 10000);
+    if (end > start) return Math.max(0, Math.min(100, ((exp - start) / (end - start)) * 100));
+  }
+  return 0;
+}
 
-  let rows = allAccounts.filter(a => {
-    const matchQ = !q || a.uid?.toLowerCase().includes(q) || a.nickname?.toLowerCase().includes(q) || a.display_uid?.toLowerCase().includes(q);
-    const matchF = !f || a.status === f;
-    return matchQ && matchF;
+function filterCounts() {
+  const counts = { all: 0, online: 0, in_match: 0, queued: 0, paused: 0, stopped: 0, expired: 0 };
+  CURRENT_ACCOUNTS.forEach(a => {
+    const s = getEffectiveStatus(a);
+    counts.all++;
+    if (['ONLINE','IN_MATCH','SEARCHING','CONNECTING'].includes(s)) counts.online++;
+    if (s === 'IN_MATCH') counts.in_match++;
+    if (s === 'QUEUED') counts.queued++;
+    if (s === 'PAUSED') counts.paused++;
+    if (s === 'STOPPED') counts.stopped++;
+    if (s === 'EXPIRED') counts.expired++;
   });
+  return counts;
+}
 
-  document.getElementById('tableTitle').textContent = `Accounts (${rows.length} / ${allAccounts.length})`;
+function renderFilterCounts() {
+  const c = filterCounts();
+  document.querySelectorAll('.filter-chip .cnt').forEach(el => {
+    const k = el.dataset.cnt;
+    if (k in c) el.textContent = c[k];
+  });
+}
 
-  const tbody = document.getElementById('tableBody');
-  if (rows.length === 0) {
-    tbody.innerHTML = '';
-    document.getElementById('emptyState').style.display = '';
+function applyFilters() {
+  let list = [...CURRENT_ACCOUNTS];
+  if (ACTIVE_FILTER !== 'all') {
+    list = list.filter(a => {
+      const s = getEffectiveStatus(a);
+      switch (ACTIVE_FILTER) {
+        case 'online':   return ['ONLINE','IN_MATCH','SEARCHING','CONNECTING'].includes(s);
+        case 'in_match': return s === 'IN_MATCH';
+        case 'queued':   return s === 'QUEUED';
+        case 'paused':   return s === 'PAUSED';
+        case 'stopped':  return s === 'STOPPED';
+        case 'expired':  return s === 'EXPIRED';
+        default:         return true;
+      }
+    });
+  }
+  if (SEARCH_TERM) {
+    const q = SEARCH_TERM.toLowerCase();
+    list = list.filter(a =>
+      String(a.uid || '').toLowerCase().includes(q) ||
+      String(a.nickname || '').toLowerCase().includes(q) ||
+      String(a.auth_uid || '').toLowerCase().includes(q)
+    );
+  }
+  list.sort((a, b) => {
+    let va, vb;
+    if (SORT_KEY === 'gained')  { va = Number(a.gained_exp) || 0; vb = Number(b.gained_exp) || 0; }
+    else if (SORT_KEY === 'matches') { va = Number(a.matches_played) || 0; vb = Number(b.matches_played) || 0; }
+    else if (SORT_KEY === 'level') { va = Number(a.level) || 1; vb = Number(b.level) || 1; }
+    else { va = 0; vb = 0; }
+    return SORT_DIR === 'asc' ? va - vb : vb - va;
+  });
+  return list;
+}
+
+function renderAccountsTable() {
+  const body = document.getElementById('accountsBody');
+  const list = applyFilters();
+  document.getElementById('accountsCount').innerHTML =
+    `(<strong>${list.length}</strong> / ${CURRENT_ACCOUNTS.length})`;
+
+  if (list.length === 0) {
+    body.innerHTML = `
+      <tr><td colspan="7">
+        <div class="empty">
+          <div class="icon">📭</div>
+          <h3>${CURRENT_ACCOUNTS.length === 0 ? 'No accounts loaded' : 'No matching accounts'}</h3>
+          <p>${CURRENT_ACCOUNTS.length === 0 ? 'Add an account or upload a JSON file to start.' : 'Try a different filter or search term.'}</p>
+        </div>
+      </td></tr>`;
+    updateBulkBar();
     return;
   }
-  document.getElementById('emptyState').style.display = 'none';
 
-  tbody.innerHTML = rows.map((a, i) => {
-    const expPct = a.exp_limit > 0 ? Math.min(100, Math.round(a.daily_exp_gained / a.exp_limit * 100)) : 0;
-    const progColor = expPct >= 90 ? 'var(--red)' : expPct >= 60 ? 'var(--yellow)' : 'var(--green)';
-    const uid = a.display_uid || a.uid;
-    return `<tr>
-      <td style="color:var(--text3);font-size:.75rem">${i+1}</td>
-      <td class="uid-cell" title="${uid}">${uid}</td>
-      <td class="nick-cell" title="${a.nickname||''}"><span style="font-size:.75rem;color:var(--text3)">Lv${a.level}</span> ${a.nickname||'—'}</td>
-      <td><span class="${badgeClass(a.status)}">${a.status}${a.active_matches>0?' ('+a.active_matches+')':''}</span></td>
-      <td style="font-weight:700">${a.level}</td>
-      <td>
-        <div style="display:flex;flex-direction:column;gap:3px">
-          <span style="font-size:.8rem;font-weight:600">${fmt(a.gained_exp)}</span>
-          <span style="font-size:.7rem;color:var(--text2)">${a.exp_rate_per_min>0?'+'+a.exp_rate_per_min+'/min':''}</span>
-        </div>
-      </td>
-      <td>
-        <div style="display:flex;flex-direction:column;gap:3px;min-width:90px">
-          <div class="prog-wrap"><div class="prog-fill" style="width:${expPct}%;background:${progColor}"></div></div>
-          <span style="font-size:.7rem;color:var(--text2)">${fmt(a.daily_exp_gained)} / ${fmt(a.exp_limit)}</span>
-        </div>
-      </td>
-      <td style="font-weight:600">${a.matches_played}</td>
-      <td><span style="color:var(--text2);font-size:.78rem">${a.region||'BD'}</span></td>
-      <td>
-        <div class="row-actions">
-          ${a.status==='PAUSED'||a.status==='STOPPED'||a.status==='EXPIRED'||a.status==='QUEUED'
-            ? `<button class="row-btn rb-start" onclick="startAcc('${uid}')">▶</button>`
-            : `<button class="row-btn rb-pause" onclick="pauseAcc('${uid}')">⏸</button>`}
-          <button class="row-btn rb-log" onclick="showLog('${uid}')">📋</button>
-          <button class="row-btn rb-del" onclick="deleteAcc('${uid}')">✕</button>
-        </div>
-      </td>
-    </tr>`;
+  body.innerHTML = list.map(acc => {
+    const s = getEffectiveStatus(acc);
+    const statusCls = statusClass(s);
+    const level = Number(acc.level) || 1;
+    const lvlLimit = acc.level_limit ? `<span class="target">→${acc.level_limit}</span>` : '';
+    const pct = expProgress(acc);
+    const gained = Number(acc.gained_exp) || 0;
+    const rate = Number(acc.exp_rate_per_min) || 0;
+    const matches = Number(acc.matches_played) || 0;
+    const authUid = String(acc.auth_uid || '');
+    const uid = escapeHtml(acc.uid);
+    const nick = escapeHtml(acc.nickname || 'Unknown');
+    const region = escapeHtml(acc.region || 'BD');
+    const isRunning = ['ONLINE','IN_MATCH','SEARCHING','CONNECTING'].includes(s);
+    const isPaused  = s === 'PAUSED';
+    const isQueued  = s === 'QUEUED';
+    const isDone    = s === 'STOPPED' || s === 'EXPIRED';
+    const canStart  = isPaused || isQueued || isDone || s === 'OFFLINE' || s === 'COOLDOWN';
+    const isSelected = SELECTED.has(authUid);
+
+    const playPauseBtn = isRunning
+      ? `<button class="icon-btn pause" title="Pause" onclick="pauseAcc('${escapeHtml(authUid)}')">⏸</button>`
+      : canStart
+        ? `<button class="icon-btn play" title="Start" onclick="startAcc('${escapeHtml(authUid)}')">▶</button>`
+        : `<button class="icon-btn" disabled style="opacity:0.3;cursor:not-allowed">·</button>`;
+
+    return `
+      <tr class="${isSelected ? 'selected' : ''}">
+        <td class="checkbox-cell">
+          <input type="checkbox" ${isSelected ? 'checked' : ''}
+                 onchange="toggleSelect('${escapeHtml(authUid)}', this.checked)">
+        </td>
+        <td>
+          <div class="nick-cell">
+            <div class="nick-name">${nick}<span class="region-tag">${region}</span></div>
+            <span class="nick-uid">${uid}</span>
+          </div>
+        </td>
+        <td><span class="badge ${statusCls}">${escapeHtml(s)}</span></td>
+        <td>
+          <div class="lvl-wrap">
+            <span class="lvl-badge">L${level}${lvlLimit}</span>
+            <div class="exp-detail">
+              <div class="exp-bar-wrap"><div class="exp-bar" style="width:${pct.toFixed(1)}%"></div></div>
+              <div class="exp-text"><strong>${fmtNum(acc.current_exp)}</strong> EXP</div>
+            </div>
+          </div>
+        </td>
+        <td class="text-right">
+          <div class="gain-text">+${fmtNum(gained)}</div>
+          ${rate > 0 ? `<div class="rate-text"><span class="arrow">▲</span> ${rate.toFixed(1)}/min</div>` : ''}
+        </td>
+        <td class="text-right mono">${fmtNum(matches)}</td>
+        <td>
+          <div class="action-btns">
+            ${playPauseBtn}
+            <button class="icon-btn edit" title="Edit limits" onclick="openEditModal('${escapeHtml(authUid)}')">⚙</button>
+            <button class="icon-btn refresh" title="Refresh" onclick="refreshAcc('${escapeHtml(authUid)}')">⟳</button>
+            <button class="icon-btn delete" title="Delete" onclick="deleteAccConfirm('${escapeHtml(authUid)}','${nick}')">🗑</button>
+          </div>
+        </td>
+      </tr>`;
   }).join('');
+
+  updateBulkBar();
 }
 
-// ═══════════════════════════════════════════════════
-//  POLL STATS
-// ═══════════════════════════════════════════════════
-async function pollStats() {
+/* ════════════════════════════════════════════════════════════
+   SELECTION
+   ════════════════════════════════════════════════════════════ */
+function toggleSelect(authUid, checked) {
+  if (checked) SELECTED.add(authUid);
+  else SELECTED.delete(authUid);
+  renderAccountsTable();
+}
+
+function toggleSelectAll() {
+  const checked = document.getElementById('selectAll').checked;
+  const list = applyFilters();
+  if (checked) list.forEach(a => SELECTED.add(String(a.auth_uid)));
+  else SELECTED.clear();
+  renderAccountsTable();
+}
+
+function clearSelection() {
+  SELECTED.clear();
+  document.getElementById('selectAll').checked = false;
+  renderAccountsTable();
+}
+
+function updateBulkBar() {
+  const n = SELECTED.size;
+  const bar = document.getElementById('bulkBar');
+  document.getElementById('bulkCount').textContent = n;
+  bar.classList.toggle('show', n > 0);
+}
+
+/* ════════════════════════════════════════════════════════════
+   FILTER / SEARCH / SORT
+   ════════════════════════════════════════════════════════════ */
+document.getElementById('filters').addEventListener('click', e => {
+  const btn = e.target.closest('.filter-chip');
+  if (!btn) return;
+  document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  ACTIVE_FILTER = btn.dataset.filter;
+  renderAccountsTable();
+});
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  SEARCH_TERM = e.target.value.trim();
+  renderAccountsTable();
+});
+
+document.querySelectorAll('th.sortable').forEach(th => {
+  th.addEventListener('click', () => {
+    const key = th.dataset.sort;
+    if (SORT_KEY === key) SORT_DIR = SORT_DIR === 'asc' ? 'desc' : 'asc';
+    else { SORT_KEY = key; SORT_DIR = 'desc'; }
+    document.querySelectorAll('th.sortable').forEach(t => t.classList.remove('sorted'));
+    th.classList.add('sorted');
+    const icon = th.querySelector('.sort-icon');
+    if (icon) icon.textContent = SORT_DIR === 'asc' ? '▲' : '▼';
+    renderAccountsTable();
+  });
+});
+
+/* ════════════════════════════════════════════════════════════
+   POOL CONFIG
+   ════════════════════════════════════════════════════════════ */
+async function applyPoolConfig() {
+  const online = document.getElementById('inputOnlineLimit').value;
+  const lvl = document.getElementById('inputLvlLimit').value;
+
+  const body = {};
+  if (online !== '') body.online_limit = Number(online);
+  if (lvl !== '') body.lvl_limit = Number(lvl);
+  if (Object.keys(body).length === 0) { toast('Nothing to apply', 'Enter a value first', 'warn'); return; }
+
+  showLoading('Applying pool config...');
+  const { ok, data } = await apiFetch(API.poolConfig, { method: 'POST', body: JSON.stringify(body) });
+  hideLoading();
+
+  if (ok && data.status === 'ok') {
+    const parts = [];
+    if (body.online_limit !== undefined)
+      parts.push(body.online_limit === 0 ? 'Limit → ∞' : `Limit → ${body.online_limit}`);
+    if (body.lvl_limit !== undefined)
+      parts.push(body.lvl_limit === 0 ? 'Lvl auto-stop OFF' : `Auto-stop at Lvl ${body.lvl_limit}`);
+    toast('Pool Config Updated', parts.join(' · '), 'success');
+    loadAll();
+  } else {
+    toast('Failed', (data && data.error) || 'Unknown error', 'error');
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   SYSTEM ACTIONS
+   ════════════════════════════════════════════════════════════ */
+async function startAll() {
+  confirmAction('Start All Accounts?', 'All paused and stopped accounts will be resumed.', async () => {
+    showLoading('Starting all...');
+    const { ok, data } = await apiFetch(API.startAll, { method: 'POST', body: '{}' });
+    hideLoading();
+    if (ok) { toast('Start All', `Queued ${data.count} account(s)`, 'success'); loadAll(); }
+    else toast('Failed', (data && data.error) || 'Error', 'error');
+  });
+}
+
+async function pauseAll() {
+  confirmAction('Pause All Accounts?', 'All running bots will be stopped.', async () => {
+    showLoading('Pausing all...');
+    const { ok, data } = await apiFetch(API.pauseAll, { method: 'POST', body: '{}' });
+    hideLoading();
+    if (ok) { toast('All Paused', `${data.count} account(s)`, 'warn'); loadAll(); }
+    else toast('Failed', (data && data.error) || 'Error', 'error');
+  }, 'warn');
+}
+
+async function refreshAll() {
+  confirmAction('Refresh / Restart All?', 'All accounts will be stopped then restarted.', async () => {
+    showLoading('Refreshing all...');
+    const { ok, data } = await apiFetch(API.refreshAll, { method: 'POST', body: '{}' });
+    hideLoading();
+    if (ok) { toast('All Refreshed', `${data.count} account(s) restarting`, 'success'); loadAll(); }
+    else toast('Failed', (data && data.error) || 'Error', 'error');
+  });
+}
+
+async function deleteAllConfirm() {
+  const inp = prompt('Type DELETE (all caps) to confirm deleting ALL accounts:');
+  if (inp !== 'DELETE') {
+    if (inp !== null) toast('Cancelled', 'Confirmation not matched', 'warn');
+    return;
+  }
+  showLoading('Deleting all accounts...');
+  const { ok, data } = await apiFetch(API.deleteAll, {
+    method: 'POST',
+    body: JSON.stringify({ confirm: 'DELETE' }),
+  });
+  hideLoading();
+  if (ok) {
+    toast('All Deleted', `${data.count} account(s) removed`, 'warn');
+    SELECTED.clear();
+    loadAll();
+  } else toast('Failed', (data && data.error) || 'Error', 'error');
+}
+
+async function downloadAccounts() {
   try {
-    const d = await fetch('/api/stats').then(r=>r.json());
-    if (!d || !d.accounts) return;
-
-    allAccounts = d.accounts;
-
-    // Summary cards
-    document.getElementById('s-total').textContent = d.total_accounts || 0;
-    document.getElementById('s-running').textContent = d.running_accounts || 0;
-    document.getElementById('s-matches').textContent = fmt(d.total_matches || 0);
-    document.getElementById('s-exp').textContent = fmt(d.total_gained_exp || 0);
-
-    // Count queued
-    const queued = allAccounts.filter(a=>a.status==='QUEUED').length;
-    document.getElementById('s-queued').textContent = queued;
-
-    // Uptime
-    const up = d.uptime || 0;
-    document.getElementById('uptimeEl').textContent = '⏱ '+fmtUptime(up);
-
-    renderTable();
-
-    // Refresh pool status silently
-    const pd = await fetch('/api/system/pool-config').then(r=>r.json()).catch(()=>null);
-    if (pd) {
-      document.getElementById('poolStatus').textContent =
-        `Active: ${pd.active_bots} | Queued: ${pd.queued_bots}`;
-    }
-  } catch(e) {}
+    const r = await fetch(API.download);
+    if (!r.ok) throw new Error('Download failed');
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `accounts_${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    toast('Exported', 'accounts JSON downloaded', 'success');
+  } catch (e) {
+    toast('Export Failed', String(e), 'error');
+  }
 }
 
-// ═══════════════════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════════════════
-loadPoolConfig();
-pollStats();
-setInterval(pollStats, 3000);
+/* ════════════════════════════════════════════════════════════
+   CONFIRM MODAL
+   ════════════════════════════════════════════════════════════ */
+let _confirmCallback = null;
+function confirmAction(title, body, callback, variant = 'primary') {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmBody').innerHTML = body;
+  _confirmCallback = callback;
+  const btn = document.getElementById('confirmYesBtn');
+  btn.className = 'btn ' + (variant === 'warn' ? 'btn-orange' : variant === 'danger' ? 'btn-red' : 'btn-primary');
+  btn.textContent = 'Confirm';
+  openModal('confirmModal');
+}
+document.getElementById('confirmYesBtn').addEventListener('click', async () => {
+  const cb = _confirmCallback;
+  closeModal('confirmModal');
+  _confirmCallback = null;
+  if (cb) await cb();
+});
+
+/* ════════════════════════════════════════════════════════════
+   SINGLE ACCOUNT ACTIONS
+   ════════════════════════════════════════════════════════════ */
+async function addSingle() {
+  const uid = document.getElementById('addUid').value.trim();
+  const pass = document.getElementById('addPass').value.trim();
+  const token = document.getElementById('addToken').value.trim();
+
+  if (!uid && !token) { toast('Missing UID', 'Enter UID or Token', 'error'); return; }
+  if (!pass && !token) { toast('Missing Password', 'Enter password or token', 'error'); return; }
+
+  showLoading('Adding account...');
+  const body = { uid };
+  if (pass) body.password = pass;
+  if (token) body.token = token;
+
+  const { ok, data } = await apiFetch(API.add, { method: 'POST', body: JSON.stringify(body) });
+  hideLoading();
+
+  if (ok && data.status === 'ok') {
+    toast('Added', `UID ${data.uid}${data.already_exists ? ' (updated)' : ''}`, 'success');
+    document.getElementById('addUid').value = '';
+    document.getElementById('addPass').value = '';
+    document.getElementById('addToken').value = '';
+    loadAll();
+  } else toast('Failed', (data && data.error) || 'Unknown error', 'error');
+}
+
+async function pauseAcc(authUid) {
+  const { ok, data } = await apiFetch(API.pause, { method: 'POST', body: JSON.stringify({ uid: authUid }) });
+  if (ok) { toast('Paused', authUid, 'warn', 2000); loadAll(); }
+  else toast('Failed', (data && data.error) || 'Error', 'error');
+}
+
+async function startAcc(authUid) {
+  const { ok, data } = await apiFetch(API.start, { method: 'POST', body: JSON.stringify({ uid: authUid }) });
+  if (ok) { toast('Started', authUid, 'success', 2000); loadAll(); }
+  else toast('Failed', (data && data.error) || 'Error', 'error', 5500);
+}
+
+async function refreshAcc(authUid) {
+  toast('Refreshing', authUid, 'info', 1500);
+  const { ok, data } = await apiFetch(API.refresh, { method: 'POST', body: JSON.stringify({ uid: authUid }) });
+  if (!ok) toast('Refresh Failed', (data && data.error) || 'Error', 'error');
+  else setTimeout(loadAll, 800);
+}
+
+async function deleteAccConfirm(authUid, nickname) {
+  confirmAction(
+    'Delete Account',
+    `Delete <b>${escapeHtml(nickname)}</b> (<code>${escapeHtml(authUid)}</code>)?<br><br>This cannot be undone.`,
+    async () => {
+      const { ok, data } = await apiFetch(API.del, { method: 'POST', body: JSON.stringify({ uid: authUid }) });
+      if (ok) { SELECTED.delete(authUid); toast('Deleted', authUid, 'warn'); loadAll(); }
+      else toast('Failed', (data && data.error) || 'Error', 'error');
+    },
+    'danger'
+  );
+}
+
+/* ════════════════════════════════════════════════════════════
+   EDIT LIMITS MODAL
+   ════════════════════════════════════════════════════════════ */
+function openEditModal(authUid) {
+  const acc = CURRENT_ACCOUNTS.find(a => String(a.auth_uid) === String(authUid));
+  if (!acc) return;
+  EDIT_TARGET_UID = authUid;
+  document.getElementById('editModalTitle').textContent = `Edit Limits · ${acc.nickname || authUid}`;
+  document.getElementById('editModalInfo').innerHTML = `
+    <div><strong>UID:</strong> ${escapeHtml(acc.uid)}</div>
+    <div><strong>Level:</strong> ${acc.level} · <strong>EXP:</strong> ${fmtNum(acc.current_exp)}</div>
+    <div><strong>Daily gained:</strong> ${fmtNum(acc.daily_exp_gained)} / ${fmtNum(acc.exp_limit)}</div>
+  `;
+  document.getElementById('editLevelLimit').value = acc.level_limit || '';
+  document.getElementById('editExpLimit').value = acc.exp_limit || 50000;
+  openModal('editModal');
+}
+
+async function saveEditLimits() {
+  if (!EDIT_TARGET_UID) return;
+  const lvl = document.getElementById('editLevelLimit').value;
+  const exp = document.getElementById('editExpLimit').value;
+
+  showLoading('Saving limits...');
+  const promises = [];
+  if (lvl !== '') promises.push(apiFetch(API.limit, { method: 'POST', body: JSON.stringify({ uid: EDIT_TARGET_UID, limit: lvl }) }));
+  else promises.push(apiFetch(API.limit, { method: 'POST', body: JSON.stringify({ uid: EDIT_TARGET_UID, limit: '' }) }));
+  if (exp !== '') promises.push(apiFetch(API.expLimit, { method: 'POST', body: JSON.stringify({ uid: EDIT_TARGET_UID, limit: exp }) }));
+
+  const results = await Promise.all(promises);
+  hideLoading();
+  const okAll = results.every(r => r.ok);
+  if (okAll) { toast('Limits Saved', EDIT_TARGET_UID, 'success'); closeModal('editModal'); loadAll(); }
+  else toast('Save Failed', 'Check the input values', 'error');
+}
+
+/* ════════════════════════════════════════════════════════════
+   BULK ACTIONS
+   ════════════════════════════════════════════════════════════ */
+async function bulkStart() {
+  const uids = [...SELECTED];
+  if (!uids.length) return;
+  showLoading(`Starting ${uids.length} account(s)...`);
+  let ok = 0;
+  for (const u of uids) {
+    const r = await apiFetch(API.start, { method: 'POST', body: JSON.stringify({ uid: u }) });
+    if (r.ok) ok++;
+  }
+  hideLoading();
+  toast('Bulk Start', `${ok}/${uids.length} started`, 'success');
+  clearSelection();
+  loadAll();
+}
+
+async function bulkPause() {
+  const uids = [...SELECTED];
+  if (!uids.length) return;
+  showLoading(`Pausing ${uids.length} account(s)...`);
+  let ok = 0;
+  for (const u of uids) {
+    const r = await apiFetch(API.pause, { method: 'POST', body: JSON.stringify({ uid: u }) });
+    if (r.ok) ok++;
+  }
+  hideLoading();
+  toast('Bulk Pause', `${ok}/${uids.length} paused`, 'warn');
+  clearSelection();
+  loadAll();
+}
+
+function bulkEditLimits() {
+  const n = SELECTED.size;
+  if (!n) return;
+  document.getElementById('editModalTitle').textContent = `Bulk Set Limits · ${n} accounts`;
+  document.getElementById('editModalInfo').innerHTML = `This will set the limits for <strong>${n}</strong> selected accounts. Leave a field blank to skip it.`;
+  document.getElementById('editLevelLimit').value = '';
+  document.getElementById('editExpLimit').value = '';
+  EDIT_TARGET_UID = null;
+  openModal('editModal');
+
+  document.querySelector('#editModal .btn-primary').onclick = async () => {
+    const lvl = document.getElementById('editLevelLimit').value;
+    const exp = document.getElementById('editExpLimit').value;
+    if (lvl === '' && exp === '') { toast('Nothing entered', 'Fill at least one field', 'warn'); return; }
+
+    showLoading(`Applying to ${n} account(s)...`);
+    let ok = 0;
+    for (const u of SELECTED) {
+      const promises = [];
+      if (lvl !== '') promises.push(apiFetch(API.limit, { method: 'POST', body: JSON.stringify({ uid: u, limit: lvl }) }));
+      if (exp !== '') promises.push(apiFetch(API.expLimit, { method: 'POST', body: JSON.stringify({ uid: u, limit: exp }) }));
+      const res = await Promise.all(promises);
+      if (res.every(r => r.ok)) ok++;
+    }
+    hideLoading();
+    toast('Bulk Edit', `${ok}/${n} updated`, 'success');
+    closeModal('editModal');
+    clearSelection();
+    loadAll();
+  };
+}
+
+function bulkDeleteConfirm() {
+  const n = SELECTED.size;
+  if (!n) return;
+  confirmAction(
+    'Delete Selected',
+    `Delete <strong>${n}</strong> account(s)?<br><br>This cannot be undone.`,
+    async () => {
+      showLoading(`Deleting ${n} account(s)...`);
+      let ok = 0;
+      for (const u of SELECTED) {
+        const r = await apiFetch(API.del, { method: 'POST', body: JSON.stringify({ uid: u }) });
+        if (r.ok) ok++;
+      }
+      hideLoading();
+      toast('Bulk Delete', `${ok}/${n} deleted`, 'warn');
+      clearSelection();
+      loadAll();
+    },
+    'danger'
+  );
+}
+
+/* ════════════════════════════════════════════════════════════
+   JSON UPLOAD
+   ════════════════════════════════════════════════════════════ */
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+dropzone.addEventListener('click', () => fileInput.click());
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag'));
+dropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropzone.classList.remove('drag');
+  const f = e.dataTransfer.files && e.dataTransfer.files[0];
+  if (f) handleFile(f);
+});
+fileInput.addEventListener('change', e => {
+  const f = e.target.files && e.target.files[0];
+  if (f) handleFile(f);
+});
+
+async function handleFile(file) {
+  document.getElementById('dropFileName').textContent = `📄 ${file.name}`;
+  showLoading('Uploading JSON...');
+  const fd = new FormData();
+  fd.append('file', file);
+  try {
+    const r = await fetch(API.uploadJson, { method: 'POST', body: fd });
+    const data = await r.json();
+    hideLoading();
+    handleUploadResponse(data);
+  } catch (e) {
+    hideLoading();
+    toast('Upload Failed', String(e), 'error');
+  }
+}
+
+async function uploadJsonText() {
+  const txt = document.getElementById('jsonPaste').value.trim();
+  if (!txt) { toast('Empty', 'Paste JSON first', 'warn'); return; }
+  let parsed;
+  try { parsed = JSON.parse(txt); }
+  catch (e) { toast('Invalid JSON', String(e), 'error'); return; }
+
+  showLoading('Uploading JSON...');
+  const { ok, data } = await apiFetch(API.uploadJson, { method: 'POST', body: JSON.stringify(parsed) });
+  hideLoading();
+  if (ok) handleUploadResponse(data);
+  else toast('Upload Failed', (data && data.error) || 'Error', 'error');
+}
+
+function handleUploadResponse(data) {
+  if (!data || data.status !== 'ok') {
+    toast('Upload Failed', (data && data.error) || 'Unknown error', 'error');
+    return;
+  }
+  const parts = [`+${data.added} added`];
+  if (data.skipped) parts.push(`${data.skipped} skipped`);
+  if (data.total_in_file) parts.push(`${data.total_in_file} total`);
+  toast('JSON Uploaded', parts.join(' · '), 'success', 5000);
+  document.getElementById('jsonPaste').value = '';
+  document.getElementById('dropFileName').textContent = '';
+  fileInput.value = '';
+  loadAll();
+}
+
+/* ════════════════════════════════════════════════════════════
+   QUEUE DRAWER
+   ════════════════════════════════════════════════════════════ */
+function showQueueDrawer() {
+  document.getElementById('queueCount').textContent = CURRENT_QUEUE.length;
+  const list = document.getElementById('queueList');
+  if (CURRENT_QUEUE.length === 0) {
+    list.innerHTML = `<div class="muted" style="text-align:center;padding:40px">No accounts in queue</div>`;
+  } else {
+    list.innerHTML = CURRENT_QUEUE.map((k, i) =>
+      `<div class="queue-chip">#${i + 1} · ${escapeHtml(k)}</div>`
+    ).join('');
+  }
+  openModal('queueModal');
+}
+
+/* ════════════════════════════════════════════════════════════
+   AUTO REFRESH + UPTIME TICK
+   ════════════════════════════════════════════════════════════ */
+function toggleAutoRefresh() {
+  AUTO_REFRESH = !AUTO_REFRESH;
+  const sw = document.getElementById('autoRefreshSwitch');
+  sw.classList.toggle('on', AUTO_REFRESH);
+  if (AUTO_REFRESH) startRefreshTimer();
+  else stopRefreshTimer();
+}
+function startRefreshTimer() {
+  stopRefreshTimer();
+  REFRESH_TIMER = setInterval(loadAll, 3000);
+}
+function stopRefreshTimer() {
+  if (REFRESH_TIMER) { clearInterval(REFRESH_TIMER); REFRESH_TIMER = null; }
+}
+
+function tickUptime() {
+  UPTIME_SECONDS++;
+  document.getElementById('statUptime').textContent = fmtUptime(UPTIME_SECONDS);
+}
+
+/* ════════════════════════════════════════════════════════════
+   KEYBOARD SHORTCUTS
+   ════════════════════════════════════════════════════════════ */
+document.addEventListener('keydown', e => {
+  if (e.target.matches('input, textarea')) return;
+  if (e.key === 'r' || e.key === 'R') { loadAll(); toast('Refreshed', '', 'info', 1200); }
+  if (e.key === 'a' || e.key === 'A') {
+    document.getElementById('selectAll').checked = true;
+    toggleSelectAll();
+  }
+});
+
+/* ════════════════════════════════════════════════════════════
+   BOOT
+   ════════════════════════════════════════════════════════════ */
+loadAll();
+startRefreshTimer();
+setInterval(tickUptime, 1000);
 </script>
 </body>
 </html>
